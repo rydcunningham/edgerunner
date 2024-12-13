@@ -10,7 +10,7 @@ export function NavLink({ href, children }: { href: string; children: React.Reac
   return (
     <Link 
       href={href} 
-      className={`block text-[#C14BFC] ${isActive ? 'font-bold' : 'hover:underline'}`}
+      className={`block text-primary ${isActive ? 'font-bold' : 'hover:underline'}`}
     >
       {children}
     </Link>

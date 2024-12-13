@@ -66,9 +66,9 @@ export default function Investments() {
     <div className="space-y-12">
       <header className="space-y-2">
         <h2 className="text-xl font-mono">featured investments</h2>
-        <p className="text-zinc-300">
-          focused on early-stage investments in AI/ML, developer tools, and enterprise SaaS.{' '}
-          <a href="mailto:rc@edgerunner.io" className="text-[#C14BFC] hover:underline">
+        <p className="text-muted-foreground">
+          early-stage investments in AI, infrastructure, and dev tools.{' '}
+          <a href="mailto:rc@edgerunner.io" className="text-primary hover:underline">
             get in touch
           </a>{' '}
           →
@@ -78,22 +78,22 @@ export default function Investments() {
       <div className="space-y-16">
         {Object.entries(categories).map(([category, investments]) => (
           <section key={category} className="space-y-6">
-            <h3 className="text-lg font-mono text-zinc-400">{category}</h3>
+            <h3 className="text-lg font-mono text-muted-foreground">{category}</h3>
             <div className="space-y-6">
               {investments.map((investment) => (
                 <article key={investment.name} className="space-y-4">
-                  <h4 className="text-[#C14BFC] font-mono">{investment.name}</h4>
+                  <h4 className="text-primary font-mono">{investment.name}</h4>
                   <div className="grid grid-cols-[1fr,120px,80px] gap-6">
-                    <p className="text-zinc-300">{investment.description}</p>
-                    <div className="text-zinc-300 font-mono">{investment.round}</div>
-                    <div className="text-zinc-500 font-mono">{investment.year}</div>
+                    <p className="text-muted-foreground">{investment.description}</p>
+                    <div className="text-muted-foreground font-mono">{investment.round}</div>
+                    <div className="text-muted-foreground font-mono">{investment.year}</div>
                   </div>
                   <div className="flex gap-3 text-sm">
                     {investment.links.map((link) => (
                       <a 
                         key={link.url}
                         href={link.url} 
-                        className="text-zinc-500 hover:text-[#C14BFC]"
+                        className="text-muted-foreground hover:text-primary"
                       >
                         {link.label} →
                       </a>

@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -24,6 +27,32 @@
     --input: 0 0% 20%;
     --ring: 284 96% 64%;  /* #C14BFC */
     --radius: 0.5rem;
+    --font-primary: 'IBM Plex Mono', 'Fira Code', 'Consolas', monospace;
+    --font-secondary: 'JetBrains Mono', 'SF Mono', 'Monaco', monospace;
+    --glass-opacity: 0.7;  /* 70% opacity for dark mode */
+  }
+  
+  :root[data-theme="light"] {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 284 96% 64%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 25%;
+    --accent: 284 96% 64%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 89%;
+    --input: 0 0% 89%;
+    --ring: 284 96% 64%;
+    --glass-opacity: 0.7;  /* 70% opacity for light mode */
   }
 }
 
@@ -33,6 +62,7 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
+    font-family: var(--font-primary);
   }
 }
 
@@ -40,3 +70,8 @@
 .backdrop-blur-xl {
   transition: backdrop-filter 0.3s ease;
 } 
+
+/* You can also target specific elements to use different fonts */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-secondary);
+}
