@@ -16,11 +16,11 @@ export default function RootLayout({
           backgroundColor: 'black'
         }}
       >
-        <div className="min-h-screen p-8">
-          <div className="min-h-[calc(100vh-4rem)] rounded-xl backdrop-blur-xl bg-black/70 border border-zinc-800/50">
-            <div className="max-w-5xl mx-auto px-8 py-16 grid grid-cols-[220px,1fr] gap-14">
+        <div className="fixed inset-8">
+          <div className="h-full rounded-xl backdrop-blur-xl bg-black/70 border border-zinc-400/10">
+            <div className="h-full max-w-7xl mx-auto px-8 py-16 grid grid-cols-[220px,1fr] gap-14">
               <header>
-                <div className="border-r border-zinc-800/50 pr-14">
+                <div className="border-r-[2px] border-zinc-200/10 pr-14">
                   <nav className="space-y-1 font-mono">
                     <NavLink href="/">home</NavLink>
                     <NavLink href="/bio">bio</NavLink>
@@ -38,7 +38,7 @@ export default function RootLayout({
                   <p>© mmxxiv rydcunningham</p>
                 </div>
               </header>
-              <main className="max-w-2xl text-zinc-100">
+              <main className="text-zinc-100 overflow-y-auto">
                 {children}
               </main>
             </div>
