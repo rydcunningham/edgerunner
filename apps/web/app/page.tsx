@@ -31,27 +31,16 @@ export default function Home() {
       <section className="space-y-4">
         <h2 className="text-xl font-mono">Latest Posts</h2>
         <div className="space-y-2">
-<<<<<<< HEAD
           {latestPosts.map(post => (
             <Link 
               key={post.slug}
               href={`/blog/${post.slug}`} 
               className="block group"
             >
-              <span className="text-[#C14BFC] group-hover:underline">{post.title}</span>
-              <span className="text-zinc-500 text-sm ml-2">{post.date}</span>
+              <span className="text-primary group-hover:underline">{post.title}</span>
+              <span className="text-muted-foreground text-sm ml-2">{post.date}</span>
             </Link>
           ))}
-=======
-          <a href="/blog/modern-web-stack" className="block group">
-            <span className="text-primary group-hover:underline">Building a Modern Web Stack</span>
-            <span className="text-muted-foreground text-sm ml-2">March 15, 2024</span>
-          </a>
-          <a href="/blog/future-of-ai" className="block group">
-            <span className="text-primary group-hover:underline">The Future of AI Development</span>
-            <span className="text-muted-foreground text-sm ml-2">March 10, 2024</span>
-          </a>
->>>>>>> a759d4d (added dark mode toggle and CSS logic)
         </div>
       </section>
     </div>
