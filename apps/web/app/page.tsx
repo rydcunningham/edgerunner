@@ -22,9 +22,9 @@ export default function Home() {
       <section className="space-y-4">
         <h2 className="text-xl font-mono">Highlights</h2>
         <ul className="space-y-2 text-muted-foreground">
-          <li>• Building AI-powered tools for developers</li>
-          <li>• Previously at [Company], working on [Project]</li>
-          <li>• Writing about AI, technology, and the future</li>
+          <li>• Founding Partner at <a href="https://www.shack15.com/ventures" className="text-primary hover:underline">SHACK15 Ventures</a>, an SF AI and deeptech fund</li>
+          <li>• Built 9 companies w/ Andrew Ng at <a href="https://aifund.ai/" className="text-primary hover:underline">AI Fund</a> (incl. ValidMind, Workhelix, Echelon)</li>
+          <li>• Prev. product at <a href="https://techcrunch.com/2022/09/01/reddit-acquires-contextualization-company-spiketrap-to-boost-its-ads-business/" className="text-primary hover:underline">Spiketrap</a> (acq. by reddit), Uber</li>
         </ul>
       </section>
 

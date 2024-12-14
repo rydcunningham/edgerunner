@@ -10,10 +10,9 @@ export default function Blog() {
         <h2 className="text-xl font-mono">machine yearning</h2>
         <p className="text-muted-foreground">
           subscribe via{' '}
-          <a href="https://edgerunner.substack.com" className="text-primary hover:underline">
-            Substack
+          <a href="https://machineyearning.substack.com" className="text-primary hover:underline">
+            Substack →
           </a>{' '}
-          →
         </p>
       </header>
 
@@ -26,6 +25,7 @@ export default function Blog() {
               </h3>
               <div className="flex gap-4 text-sm text-muted-foreground">
                 <span>{post.date}</span>
+                <span>•</span>
                 <span>{post.readTime}</span>
               </div>
               <p className="text-muted-foreground">

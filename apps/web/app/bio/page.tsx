@@ -6,9 +6,8 @@ export default function Bio() {
         <p className="text-muted-foreground">
           founder // investor.{' '}
           <a href="mailto:rc@edgerunner.io" className="text-primary hover:underline">
-            get in touch
+            get in touch →
           </a>{' '}
-          →
         </p>
       </header>
 

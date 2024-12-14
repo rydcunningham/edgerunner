@@ -69,36 +69,37 @@ export default function Investments() {
         <p className="text-muted-foreground">
           early-stage investments in AI, infrastructure, and dev tools.{' '}
           <a href="mailto:rc@edgerunner.io" className="text-primary hover:underline">
-            get in touch
+            get in touch →
           </a>{' '}
-          →
         </p>
       </header>
 
       <div className="space-y-16">
         {Object.entries(categories).map(([category, investments]) => (
           <section key={category} className="space-y-6">
-            <h3 className="text-lg font-mono text-muted-foreground">{category}</h3>
-            <div className="space-y-6">
+            <h3 className="text-lg font-mono text-foreground">{category}</h3>
+            <div className="space-y-8">
               {investments.map((investment) => (
                 <article key={investment.name} className="space-y-4">
                   <h4 className="text-primary font-mono">{investment.name}</h4>
-                  <div className="grid grid-cols-[1fr,120px,80px] gap-6">
+                  <div className="grid grid-cols-[1fr,auto,auto] gap-8">
                     <p className="text-muted-foreground">{investment.description}</p>
-                    <div className="text-muted-foreground font-mono">{investment.round}</div>
+                    <div className="text-muted-foreground font-mono whitespace-nowrap">{investment.round}</div>
                     <div className="text-muted-foreground font-mono">{investment.year}</div>
                   </div>
-                  <div className="flex gap-3 text-sm">
-                    {investment.links.map((link) => (
-                      <a 
-                        key={link.url}
-                        href={link.url} 
-                        className="text-muted-foreground hover:text-primary"
-                      >
-                        {link.label} →
-                      </a>
-                    ))}
-                  </div>
+                  {investment.links.length > 0 && (
+                    <div className="flex gap-3 text-sm">
+                      {investment.links.map((link) => (
+                        <a 
+                          key={link.url}
+                          href={link.url} 
+                          className="text-muted-foreground hover:text-primary"
+                        >
+                          {link.label} →
+                        </a>
+                      ))}
+                    </div>
+                  )}
                 </article>
               ))}
             </div>
