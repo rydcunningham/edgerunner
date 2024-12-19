@@ -2,13 +2,6 @@ export default function Investments() {
   const categories = {
     "AI": [
       {
-        name: "OpenInfer",
-        description: "Local inference. Stealth.",
-        round: "Pre-seed",
-        year: "2024",
-        links: []
-      },
-      {
         name: "Positron",
         description: "Inference ASICs. OOM improvements over Hopper / Blackwell.",
         round: "Seed",
