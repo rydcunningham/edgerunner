@@ -11,21 +11,21 @@ _This post is part 1 of a 2-part series on evolving "model-centric" building and
 
 As AI hype continues to rip, a nagging question is popping up in boardroom circles - are we actually seeing real impact from our AI strategies?
 
-A few weeks ago, we co-hosted an event with Reinvent Futures here at SHACK15, which brought together leaders from the tech and sustainability spheres. Matt Kropp, CTO of BCG X (BCG's tech build & design unit), kicked things off with a pretty clear signal from their clients: "we're now getting to the point where there's some question about whether we're actually getting impact."
+A few weeks ago, we co-hosted an event with [Reinvent Futures](https://www.reinventfutures.com/) here at [SHACK15](https://www.shack15.com/), which brought together leaders from the tech and sustainability spheres. Matt Kropp, CTO of [BCG X](https://www.bcg.com/x) (BCG's tech build & design unit), kicked things off with a pretty clear signal from their clients: "we're now getting to the point where there's some question about whether we're actually getting impact."
 
 The surveys definitely back this up, and I'm personally hearing this more and more among consumers and enterprises alike.
 
 * Consumers are feeling the squeeze of subscription fees, as research labs start to lock the best models behind paywalls.
-* Enterprises are still feeling pressure from their boards to adopt GenAI tools (89% say AI and GenAI are in top 3 tech priorities for this year), but struggle to figure out which ones to use.
-* Even with a hefty "enterprise" discount, no sane CIO or CFO is going to greenlight a plan that charges $240 per user per year for access to OpenAI's finest, because they first want to know… what will I actually use this for?
+* Enterprises are still feeling pressure from their boards to adopt GenAI tools ([89% say AI and GenAI are in top 3 tech priorities](https://www.gartner.com/en/newsroom/press-releases/2024-01-17-gartner-says-generative-ai-is-top-priority-for-89-percent-of-corporate-directors-in-2024) for this year), but struggle to figure out which ones to use.
+* Even with a hefty "enterprise" discount, no sane CIO or CFO is going to greenlight a plan that charges [$240 per user per year](https://openai.com/enterprise) for access to OpenAI's finest, because they first want to know… what will I actually use this for?
 
 LLMs are becoming commoditized, so teams building AI products they want businesses to use need to focus on building complete solutions solving concrete problems. Simply participating in the LLM gold rush isn't enough anymore, because **the model is not the product**.
 
 # Model-centric missteps
 
-Over 70% of people haven't even used generative AI tools yet, let alone know the difference between distinct models. While I'm grateful for leaderboards from Stanford, HuggingFace, and most recently Scale, the benchmarks we use are somewhat academic, or at least lack the specificity one could use making a business decision about which model to go with.
+Over 70% of people haven't even used generative AI tools yet, let alone know the difference between distinct models. While I'm grateful for leaderboards from [Stanford](https://crfm.stanford.edu/helm/latest/), [HuggingFace](https://huggingface.co/spaces/lmsys/chatbot-arena-leaderboard), and most recently [Scale](https://scale.com/blog/llm-benchmarking), the benchmarks we use are somewhat academic, or at least lack the specificity one could use making a business decision about which model to go with.
 
-The first chapter of the AI arms race has had VCs shoveling money towards teams building model-centric research labs. These models are great across a range of tasks, but lack significant differentiation from one another, and may eventually fall short of investor expectations. Inflection's implosion and Stability AI's public struggle demonstrate the eventual risks of this model-centric approach.
+The first chapter of the AI arms race has had VCs shoveling money towards teams building model-centric research labs. These models are great across a range of tasks, but lack significant differentiation from one another, and may eventually fall short of investor expectations. [Inflection's implosion](https://www.theinformation.com/articles/inside-inflections-collapse-how-a-1-3-billion-bet-on-beating-openai-fell-apart) and [Stability AI's public struggle](https://www.bloomberg.com/news/articles/2024-02-13/stability-ai-founder-emad-mostaque-steps-down-as-ceo) demonstrate the eventual risks of this model-centric approach.
 
 <figure>
   <img src="/img/fireship-code-report.webp" alt="Fireship's The Code Report" />
@@ -49,7 +49,7 @@ Similarly, Stability, despite hitting unicorn status in 2022 thanks to the buzz 
 
 So if the model-centric approach is losing its luster, what are market leaders doing instead? They're shifting their focus from best-in-class general models to tightly integrated ecosystems.
 
-OpenAI is doubling down on the sci-fi dream of an always-on, hyper-personalized AI companion (_Her_, but IRL), while Google and Apple are leveraging existing product and device ecosystems to make their models indispensable across every touchpoint. Meanwhile, Microsoft is betting on "Copilot+" branding as a value-add for its PC and productivity software businesses.
+OpenAI is doubling down on the sci-fi dream of an always-on, hyper-personalized AI companion ([_Her_](https://www.imdb.com/title/tt1798709/), but IRL), while [Google](https://blog.google/technology/ai/google-gemini-ai/) and [Apple](https://www.apple.com/newsroom/2024/03/apple-introduces-apple-sports/) are leveraging existing product and device ecosystems to make their models indispensable across every touchpoint. Meanwhile, [Microsoft](https://blogs.microsoft.com/blog/2024/03/21/microsoft-copilot-app-ios-android/) is betting on "Copilot+" branding as a value-add for its PC and productivity software businesses.
 
 Each player is trying to weave LLMs into a stickier, more defensible product strategy as the go-to "AI Operating System." Google, Apple, and Microsoft have extensive network effects they can already leverage for lock-in, and while OpenAI is playing catch-up here, their market share with ChatGPT has so far been substantial enough to dictate the pace of development.
 
@@ -84,8 +84,8 @@ In short, the current economics of AI inference are concerningly unstable, and b
 
 To recap, the path to real impact and ROI remains unclear for many businesses under pressure to adopt AI in their products and services. So, what's a savvy team to do when crafting their strategy? Two options stand out in contrast to the model-centric approach:
 
-1. **Highly optimized token-as-a-service providers** like DeepInfra offer a compelling value proposition, by focusing solely on efficient model hosting and serving. By comparing models and hosts on independent leaderboards like Artificial Analysis, businesses can find the best bang for their inference buck.
-2. **Model routers** like Martian and OpenRouter take this a step further by dynamically allocating queries across multiple models based on cost, speed, and performance. They're constantly tracking the model tokenomics and quality with insane prompt-specific granularity, which lets customers tap into the best available models for any use case without vendor lock-in.
+1. **Highly optimized token-as-a-service providers** like [DeepInfra](https://deepinfra.com/) offer a compelling value proposition, by focusing solely on efficient model hosting and serving. By comparing models and hosts on independent leaderboards like [Artificial Analysis](https://artificial-analysis.com/), businesses can find the best bang for their inference buck.
+2. **Model routers** like [Martian](https://martian.ai/) and [OpenRouter](https://openrouter.ai/) take this a step further by dynamically allocating queries across multiple models based on cost, speed, and performance. They're constantly tracking the model tokenomics and quality with insane prompt-specific granularity, which lets customers tap into the best available models for any use case without vendor lock-in.
 
 <figure>
   <img src="/img/artificial-analysis.webp" alt="Artificial Analysis leaderboard" />
@@ -94,6 +94,6 @@ To recap, the path to real impact and ROI remains unclear for many businesses un
   </figcaption>
 </figure>
 
-Of course, each solution has their tradeoffs, which we'll dive into next week with a tactical breakdown in part 2. We'll explore, model routing, fine-tuning, leaderboarding, and more practical takeaways for AI strategies. Until then, I'd recommend reading Cerebral Valley's deep dive with the Martian team to get familiar with what they're up to.
+Of course, each solution has their tradeoffs, which we'll dive into next week with a tactical breakdown in part 2. We'll explore, model routing, fine-tuning, leaderboarding, and more practical takeaways for AI strategies. Until then, I'd recommend reading [Cerebral Valley's deep dive with the Martian team](https://www.cerebralvalley.ai/post/martian-is-building-the-future-of-llm-inference-2Hs4Hs9OrS6n50HC3YyWPu) to get familiar with what they're up to.
 
 But for now, the key takeaways are this: **the model is not the product**, and the businesses that will thrive are those that **match the right model to the right job at the best price.** 
