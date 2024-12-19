@@ -1,5 +1,5 @@
 ---
-title: "It's Time to Move On From Copilots"
+title: "It's time to move on from copilots"
 subtitle: "We can build better than this."
 date: "2024-05-14"
 excerpt: "I've been saying for months I don't like to invest in application-layer AI startups. Here's why - and what it would take to change my mind."
@@ -108,7 +108,6 @@ Listen to this [AI-patient conversation](https://twitter.com/hippocraticai/statu
     Bonus points for anyone who heard "delve" as a clear AI giveaway.
   </figcaption>
 </figure>
-
 
 * The primary agent for Linda prioritizes good bedside manner, building rapport, and providing empathetic guidance
 * The “checklist specialist” balances extracting info and moving the conversation forward
