@@ -1,5 +1,5 @@
 from pydantic import BaseModel, HttpUrl, Field, UUID4
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 from enum import Enum
 import numpy as np
@@ -12,6 +12,7 @@ class ContentType(str, Enum):
     RESEARCH_PAPER = "research_paper"
     BLOG_POST = "blog_post"
     NEWS = "news"
+    WEBSITE = "website"
     OTHER = "other"
 
 class ContentLanguage(str, Enum):
@@ -72,7 +73,12 @@ class Metadata(BaseModel):
     word_frequency: Dict[str, int] = Field(default_factory=dict)
     
     # Custom fields for future expansion
-    custom_fields: Dict[str, any] = Field(default_factory=dict)
+    custom_fields: Dict[str, Any] = Field(default_factory=dict)
+
+    def dict(self, *args, **kwargs) -> dict:
+        """Convert to dictionary, excluding None values"""
+        d = super().dict(*args, **kwargs)
+        return {k: v for k, v in d.items() if v is not None}
 
 class Content(BaseModel):
     id: Optional[UUID4] = None
