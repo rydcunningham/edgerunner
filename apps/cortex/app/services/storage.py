@@ -1,11 +1,17 @@
 from supabase import create_client
 from app.config.settings import get_settings
 from app.models.content import Content
+from urllib.parse import urlparse
 
 settings = get_settings()
 
 # Initialize Supabase client
 supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+
+def extract_domain(url: str) -> str:
+    """Extract the domain from a URL"""
+    parsed = urlparse(url)
+    return parsed.netloc
 
 async def store_content(content: Content) -> dict:
     """
@@ -15,11 +21,17 @@ async def store_content(content: Content) -> dict:
         # Convert Content model to dict for storage
         content_data = {
             "url": str(content.url),
-            "title": content.title,
-            "markdown": content.markdown,
+            "domain": content.domain or extract_domain(str(content.url)),
+            "date_added": content.date_added.isoformat(),
+            "date_published": content.date_published.isoformat() if content.date_published else None,
+            "added_by": content.added_by,
+            "authors": content.authors,
+            "type": content.type.value,
+            "tags": content.tags,
+            "links": [link.dict() for link in content.links],
+            "markdown_content": content.markdown_content,
             "images": [img.dict() for img in content.images],
-            "metadata": content.metadata,
-            "created_at": content.created_at.isoformat()
+            "metadata": content.metadata
         }
         
         # Insert into Supabase

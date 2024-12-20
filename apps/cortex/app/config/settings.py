@@ -4,6 +4,7 @@ from functools import lru_cache
 class Settings(BaseSettings):
     # API Keys
     FIRECRAWL_API_KEY: str
+    OPENAI_API_KEY: str
     SUPABASE_KEY: str
     
     # Supabase Configuration

@@ -21,7 +21,7 @@ This question is at the heart of many Fortune 500 companies AI strategies, and I
 
 # Your data (probably) doesn't matter
 
-Unfortunately, fine-tuning your own <Company Name>GPT might be a waste of time.
+Unfortunately, fine-tuning your own \<Company Name>GPT might be a waste of time.
 
 My consultant friends wouldn't want me telling you this, but beyond some baseline of model intelligence, your data probably doesn't matter that much. While fine-tuning can be useful for consistent output formats or learning certain styles, most businesses' datasets aren't unique enough in language vector space to warrant the investment.
 
