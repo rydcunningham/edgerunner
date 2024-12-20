@@ -1,6 +1,5 @@
 import './globals.css'
 import { NavLink } from '../components/nav-link'
-import Image from 'next/image'
 import { ThemeToggle } from '../components/theme-toggle'
 
 export default function RootLayout({
