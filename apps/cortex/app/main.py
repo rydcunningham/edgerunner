@@ -15,7 +15,11 @@ settings = get_settings()
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 
 # Add markdown filter to Jinja2 environment
-templates.env.filters["markdown"] = lambda text: markdown.markdown(text or "", extensions=['tables', 'fenced_code'])
+templates.env.filters["markdown"] = lambda text: markdown.markdown(
+    text or "", 
+    extensions=['fenced_code', 'tables'],
+    output_format='html5'
+)
 
 # CORS middleware configuration
 app.add_middleware(

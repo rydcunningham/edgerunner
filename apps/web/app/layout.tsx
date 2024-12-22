@@ -25,8 +25,8 @@ export default function RootLayout({
                   <nav className="space-y-1 font-mono">
                     <NavLink href="/">home</NavLink>
                     <NavLink href="/bio">bio</NavLink>
+                    <NavLink href="/work">work</NavLink>
                     <NavLink href="/blog">machine yearning</NavLink>
-                    <NavLink href="/projects">projects</NavLink>
                     <NavLink href="/investments">investments</NavLink>
                   </nav>
                 </div>

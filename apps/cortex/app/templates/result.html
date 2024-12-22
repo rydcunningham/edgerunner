@@ -85,8 +85,10 @@
 
         <div class="border-t pt-4">
             <h3 class="text-lg font-medium mb-2">Content Preview</h3>
-            <div class="prose max-w-none" data-field="content">
-                {{ content.markdown_content | markdown | safe }}
+            <div class="content-preview">
+                <div class="prose prose-lg" data-field="content">
+                    {{ content.markdown_content | markdown | safe }}
+                </div>
             </div>
         </div>
     </div>

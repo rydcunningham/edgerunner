@@ -5,7 +5,118 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/markdown.css') }}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    typography: {
+                        DEFAULT: {
+                            css: {
+                                'h1, h2, h3, h4, h5, h6': {
+                                    fontWeight: '700',
+                                    lineHeight: '1.2',
+                                    color: '#111827',
+                                },
+                                h1: {
+                                    fontSize: '2.5em',
+                                    borderBottom: '2px solid #e5e7eb',
+                                    paddingBottom: '0.5em',
+                                    marginTop: '0',
+                                    marginBottom: '1em',
+                                },
+                                h2: {
+                                    fontSize: '1.75em',
+                                    borderBottom: '1px solid #e5e7eb',
+                                    paddingBottom: '0.3em',
+                                    marginTop: '2em',
+                                    marginBottom: '1em',
+                                },
+                                h3: {
+                                    fontSize: '1.5em',
+                                    marginTop: '2em',
+                                    marginBottom: '1em',
+                                },
+                                h4: {
+                                    fontSize: '1.25em',
+                                    marginTop: '2em',
+                                    marginBottom: '1em',
+                                },
+                                h5: {
+                                    fontSize: '1.1em',
+                                    marginTop: '2em',
+                                    marginBottom: '1em',
+                                },
+                                h6: {
+                                    fontSize: '1em',
+                                    marginTop: '2em',
+                                    marginBottom: '1em',
+                                },
+                                p: {
+                                    marginTop: '1.25em',
+                                    marginBottom: '1.25em',
+                                    lineHeight: '1.75',
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            plugins: [
+                window.tailwindcss.plugin.withOptions(function (options) {
+                    return function ({ addBase, theme }) {
+                        addBase({
+                            '.content-preview': {
+                                '& h1, & h2, & h3, & h4, & h5, & h6': {
+                                    fontWeight: '700',
+                                    lineHeight: '1.2',
+                                    color: '#111827',
+                                },
+                                '& h1': {
+                                    fontSize: '2.5em',
+                                    borderBottom: '2px solid #e5e7eb',
+                                    paddingBottom: '0.5em',
+                                    marginTop: '0',
+                                    marginBottom: '1em',
+                                },
+                                '& h2': {
+                                    fontSize: '1.75em',
+                                    borderBottom: '1px solid #e5e7eb',
+                                    paddingBottom: '0.3em',
+                                    marginTop: '2em',
+                                    marginBottom: '1em',
+                                },
+                                '& h3': {
+                                    fontSize: '1.5em',
+                                    marginTop: '2em',
+                                    marginBottom: '1em',
+                                },
+                                '& h4': {
+                                    fontSize: '1.25em',
+                                    marginTop: '2em',
+                                    marginBottom: '1em',
+                                },
+                                '& h5': {
+                                    fontSize: '1.1em',
+                                    marginTop: '2em',
+                                    marginBottom: '1em',
+                                },
+                                '& h6': {
+                                    fontSize: '1em',
+                                    marginTop: '2em',
+                                    marginBottom: '1em',
+                                },
+                                '& p': {
+                                    marginTop: '1.25em',
+                                    marginBottom: '1.25em',
+                                    lineHeight: '1.75',
+                                },
+                            },
+                        });
+                    };
+                }),
+            ],
+        };
+    </script>
 </head>
 <body class="bg-gray-100 min-h-screen">
     {% block content %}{% endblock %}

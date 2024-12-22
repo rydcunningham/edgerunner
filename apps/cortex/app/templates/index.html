@@ -95,7 +95,9 @@
 
             <div class="border-t pt-4">
                 <h3 class="text-lg font-medium mb-2">Content Preview</h3>
-                <div class="prose max-w-none" id="content">
+                <div class="content-preview">
+                    <div class="prose prose-lg" id="content">
+                    </div>
                 </div>
             </div>
         </div>
@@ -192,8 +194,8 @@
                 document.getElementById('linksSection').classList.remove('hidden');
             }
             
-            // Render markdown content
-            document.getElementById('content').innerHTML = md.render(content.content || '');
+            // Update content preview
+            document.getElementById('content').innerHTML = content.content;
             
             // Show results
             document.getElementById('results').classList.remove('hidden');
@@ -211,11 +213,5 @@
         document.getElementById('error').classList.add('hidden');
         document.getElementById('urlForm').reset();
     }
-</script>
-
-<!-- Include markdown-it for client-side markdown rendering -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/13.0.1/markdown-it.min.js"></script>
-<script>
-    const md = window.markdownit();
 </script>
 {% endblock %} 
