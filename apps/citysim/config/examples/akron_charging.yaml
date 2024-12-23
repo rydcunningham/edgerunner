@@ -1,0 +1,79 @@
+charging_station_types:
+  dc_fast_charger:
+    power_output_kw: 150
+    connector_types: ["CCS", "CHAdeMO"]
+    cost_per_kwh: 0.35
+    setup_time_minutes: 2
+    compatible_vehicle_types: ["ev_sedan", "ev_suv", "ev_cargo_van"]
+
+  level2_charger:
+    power_output_kw: 7.2
+    connector_types: ["Type 2"]
+    cost_per_kwh: 0.20
+    setup_time_minutes: 1
+    compatible_vehicle_types: ["ev_sedan", "ev_suv", "ev_cargo_van"]
+
+  ebike_charger:
+    power_output_kw: 0.5
+    connector_types: ["Type 1"]
+    cost_per_kwh: 0.12
+    setup_time_minutes: 0.5
+    compatible_vehicle_types: ["e_bike_courier"]
+
+# Charging station locations for Akron
+charging_stations:
+  downtown_mixed:
+    type: ["dc_fast_charger", "level2_charger"]
+    location:
+      lat: 41.0814
+      lon: -81.5190
+    num_ports:
+      dc_fast_charger: 4
+      level2_charger: 8
+    operating_hours:
+      start: "00:00"
+      end: "24:00"
+    
+  university_station:
+    type: ["dc_fast_charger", "level2_charger"]
+    location:
+      lat: 41.0770
+      lon: -81.5115
+    num_ports:
+      dc_fast_charger: 2
+      level2_charger: 6
+    operating_hours:
+      start: "06:00"
+      end: "23:00"
+    
+  fairlawn_heights:
+    type: "level2_charger"
+    location:
+      lat: 41.1289
+      lon: -81.6214
+    num_ports: 6
+    operating_hours:
+      start: "07:00"
+      end: "22:00"
+    
+  delivery_hub:
+    type: ["ebike_charger", "level2_charger"]
+    location:
+      lat: 41.0825
+      lon: -81.5178
+    num_ports:
+      ebike_charger: 8
+      level2_charger: 2
+    operating_hours:
+      start: "05:00"
+      end: "23:00"
+      
+  chapel_hill:
+    type: "dc_fast_charger"
+    location:
+      lat: 41.1283
+      lon: -81.4701
+    num_ports: 4
+    operating_hours:
+      start: "00:00"
+      end: "24:00" 

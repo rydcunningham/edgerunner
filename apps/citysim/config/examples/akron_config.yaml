@@ -1,0 +1,66 @@
+simulation:
+  name: "akron_ev_network"
+  description: "Electric vehicle rideshare and delivery simulation for Akron, Ohio"
+  
+  # Time settings
+  duration_hours: 24
+  time_step_seconds: 30
+  start_time: "2024-01-15T00:00:00"
+  
+  # Geographic bounds (Akron, Ohio)
+  city: "Akron, Ohio"
+  bounds:
+    north: 41.1389
+    south: 41.0247
+    east: -81.4552
+    west: -81.5843
+  
+  # Configuration files
+  config_files:
+    vehicle_types: "config/examples/vehicle_types.yaml"
+    charging_infrastructure: "config/examples/akron_charging.yaml"
+    demand_patterns: "config/examples/akron_demand.yaml"
+  
+  # Initial fleet configuration (smaller fleet for Akron)
+  initial_fleet:
+    ev_sedan: 50
+    ev_suv: 25
+    ev_cargo_van: 15
+    e_bike_courier: 40
+  
+  # Simulation features
+  enable_features:
+    battery_degradation: true
+    weather_effects: true
+    traffic_conditions: true
+    dynamic_pricing: true
+    predictive_charging: true
+  
+  # Optimization parameters
+  optimization:
+    rebalancing:
+      enabled: true
+      interval_minutes: 15
+      max_idle_time_minutes: 30
+    
+    charging_strategy:
+      type: "predictive"
+      min_battery_level: 0.15
+      target_battery_level: 0.90
+    
+    matching_algorithm:
+      type: "weighted_bipartite"
+      max_waiting_time_minutes: 10
+      max_pickup_distance_km: 3
+  
+  # Logging and output
+  logging:
+    level: "INFO"
+    metrics_interval_seconds: 60
+    save_path: "output/logs"
+  
+  visualization:
+    real_time: true
+    save_snapshots: true
+    snapshot_interval_minutes: 15
+    save_path: "output/visualizations" 
