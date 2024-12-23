@@ -1,0 +1,73 @@
+time_periods:
+  morning_rush:
+    start: "07:00"
+    end: "10:00"
+    multiplier: 2.0
+  
+  lunch_peak:
+    start: "11:30"
+    end: "14:00"
+    multiplier: 1.5
+  
+  evening_rush:
+    start: "16:00"
+    end: "19:00"
+    multiplier: 2.5
+  
+  night_time:
+    start: "22:00"
+    end: "05:00"
+    multiplier: 0.3
+
+demand_types:
+  rideshare:
+    base_rate_per_hour: 100  # Average number of ride requests per hour
+    service_types:
+      - vehicle_type: "ev_sedan"
+        percentage: 70
+      - vehicle_type: "ev_suv"
+        percentage: 30
+    typical_trip_distance_km:
+      min: 2
+      max: 15
+      mean: 5
+      std_dev: 2
+    
+  food_delivery:
+    base_rate_per_hour: 80  # Average number of delivery requests per hour
+    service_types:
+      - vehicle_type: "e_bike_courier"
+        percentage: 60
+      - vehicle_type: "ev_cargo_van"
+        percentage: 40
+    typical_trip_distance_km:
+      min: 1
+      max: 8
+      mean: 3
+      std_dev: 1.5
+
+# Example demand hotspots for San Francisco
+demand_hotspots:
+  financial_district:
+    center:
+      lat: 37.7937
+      lon: -122.3995
+    radius_km: 1.0
+    demand_multiplier: 1.8
+    active_types: ["rideshare", "food_delivery"]
+  
+  mission_district:
+    center:
+      lat: 37.7599
+      lon: -122.4148
+    radius_km: 1.2
+    demand_multiplier: 1.5
+    active_types: ["rideshare", "food_delivery"]
+    
+  soma:
+    center:
+      lat: 37.7785
+      lon: -122.3931
+    radius_km: 0.8
+    demand_multiplier: 1.6
+    active_types: ["rideshare", "food_delivery"] 

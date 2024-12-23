@@ -1,0 +1,67 @@
+charging_station_types:
+  dc_fast_charger:
+    power_output_kw: 150
+    connector_types: ["CCS", "CHAdeMO"]
+    cost_per_kwh: 0.40
+    setup_time_minutes: 2
+    compatible_vehicle_types: ["ev_sedan", "ev_suv", "ev_cargo_van"]
+
+  level2_charger:
+    power_output_kw: 7.2
+    connector_types: ["Type 2"]
+    cost_per_kwh: 0.25
+    setup_time_minutes: 1
+    compatible_vehicle_types: ["ev_sedan", "ev_suv", "ev_cargo_van"]
+
+  ebike_charger:
+    power_output_kw: 0.5
+    connector_types: ["Type 1"]
+    cost_per_kwh: 0.15
+    setup_time_minutes: 0.5
+    compatible_vehicle_types: ["e_bike_courier"]
+
+# Example charging station locations for San Francisco
+charging_stations:
+  mission_dc_fast:
+    type: "dc_fast_charger"
+    location:
+      lat: 37.7599
+      lon: -122.4148
+    num_ports: 4
+    operating_hours:
+      start: "00:00"
+      end: "24:00"
+    
+  soma_mixed_station:
+    type: ["dc_fast_charger", "level2_charger"]
+    location:
+      lat: 37.7790
+      lon: -122.3931
+    num_ports:
+      dc_fast_charger: 2
+      level2_charger: 6
+    operating_hours:
+      start: "00:00"
+      end: "24:00"
+    
+  downtown_level2:
+    type: "level2_charger"
+    location:
+      lat: 37.7897
+      lon: -122.3997
+    num_ports: 8
+    operating_hours:
+      start: "06:00"
+      end: "22:00"
+    
+  courier_hub:
+    type: ["ebike_charger", "level2_charger"]
+    location:
+      lat: 37.7694
+      lon: -122.4269
+    num_ports:
+      ebike_charger: 10
+      level2_charger: 2
+    operating_hours:
+      start: "05:00"
+      end: "23:00" 

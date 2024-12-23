@@ -1,0 +1,54 @@
+vehicle_types:
+  # Electric passenger vehicles
+  ev_sedan:
+    type: "passenger"
+    capacity: 4
+    battery:
+      capacity_kwh: 75.0
+      range_km: 400
+      charging_rate_kw: 150
+      fast_charging_compatible: true
+    speed:
+      max_kph: 120
+      urban_average_kph: 30
+    cost_per_km: 0.15
+    
+  ev_suv:
+    type: "passenger"
+    capacity: 6
+    battery:
+      capacity_kwh: 100.0
+      range_km: 350
+      charging_rate_kw: 150
+      fast_charging_compatible: true
+    speed:
+      max_kph: 110
+      urban_average_kph: 30
+    cost_per_km: 0.18
+
+  # Delivery vehicles
+  ev_cargo_van:
+    type: "delivery"
+    cargo_capacity_kg: 1000
+    battery:
+      capacity_kwh: 90.0
+      range_km: 300
+      charging_rate_kw: 100
+      fast_charging_compatible: true
+    speed:
+      max_kph: 100
+      urban_average_kph: 25
+    cost_per_km: 0.25
+    
+  e_bike_courier:
+    type: "delivery"
+    cargo_capacity_kg: 20
+    battery:
+      capacity_kwh: 0.5
+      range_km: 50
+      charging_rate_kw: 0.5
+      fast_charging_compatible: false
+    speed:
+      max_kph: 25
+      urban_average_kph: 15
+    cost_per_km: 0.05 
