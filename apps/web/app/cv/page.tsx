@@ -2,7 +2,7 @@ export default function CV() {
   return (
     <div className="space-y-12">
       <header className="space-y-2">
-        <h2 className="text-xl font-mono">Curriculum Vitae</h2>
+        <h2 className="text-xl font-mono">/cv</h2>
       </header>
 
       <div className="space-y-16">

@@ -143,7 +143,7 @@ export default function Work() {
   return (
     <div className="space-y-12">
       <header className="space-y-2">
-        <h2 className="text-xl font-mono">featured work</h2>
+        <h2 className="text-xl font-mono">/work</h2>
         <p className="text-muted-foreground">
           open source projects and contributions.{' '}
           <a href="https://github.com/rydcunningham" className="text-primary hover:underline">

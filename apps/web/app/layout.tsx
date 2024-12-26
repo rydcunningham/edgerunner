@@ -24,10 +24,9 @@ export default function RootLayout({
                 <div className="border-r-[2px] border-border pr-14">
                   <nav className="space-y-1 font-mono">
                     <NavLink href="/">home</NavLink>
-                    <NavLink href="/cv">cv</NavLink>
                     <NavLink href="/work">work</NavLink>
-                    <NavLink href="/blog">machine yearning</NavLink>
                     <NavLink href="/investments">investments</NavLink>
+                    <NavLink href="/blog">machine yearning</NavLink>
                   </nav>
                 </div>
                 <div className="mt-8 space-y-1">

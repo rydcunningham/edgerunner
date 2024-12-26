@@ -58,7 +58,7 @@ export default function Investments() {
   return (
     <div className="space-y-12">
       <header className="space-y-2">
-        <h2 className="text-xl font-mono">featured investments</h2>
+        <h2 className="text-xl font-mono">/investments</h2>
         <p className="text-muted-foreground">
           early-stage investments in AI, infrastructure, and dev tools.{' '}
           <a href="mailto:rc@edgerunner.io" className="text-primary hover:underline">
