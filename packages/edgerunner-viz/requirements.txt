@@ -4,4 +4,5 @@ numpy>=1.24.0
 pandas>=2.0.0
 pillow>=10.0.0  # For font handling
 pytest>=7.0.0  # For testing
-requests>=2.31.0  # For font downloading 
+requests>=2.31.0  # For font downloading
+adjustText>=0.8  # For automatic label placement 

@@ -6,36 +6,70 @@ A seaborn-compatible theme for creating cyberpunk-inspired data visualizations. 
 
 ```python
 COLORS = {
-    'cyberpunk_red': '#F75049',    # Primary color for emphasis and titles
+    'arasaka_red': '#F75049',    # Primary color for emphasis and titles
     'arctic': '#FFFFFF',           # Pure white for high contrast elements
     'shadow': '#424242',           # Subtle grid lines and backgrounds
     'slate': '#979797',           # Secondary elements and borders
-    'cyberpunk_cyan': '#5EF6FF',   # Accent color for contrast
+    'electric_blue': '#5EF6FF',   # Accent color for contrast
     'background': '#000000'        # True black background
 }
 ```
 
 ## Typography & Text
 
-- **Titles**: 
-  - Left-aligned
+All font sizes are relative to the figure width for consistent scaling. For a 1000px wide figure:
+
+- **Graph Title**: 
+  - Left-aligned at x=0.12
   - Bold weight
-  - Cyberpunk red color
-  - Main title: 20pt
-  - Subtitle: 16pt
-  - Positioned at x=0.12 margin
+  - Arasaka Red color
+  - Size: 1.6× figure width
+  - Position: y=0.91
+
+- **Graph Subtitle**:
+  - Left-aligned at x=0.12
+  - Regular weight
+  - Arasaka Red color
+  - Size: 0.8× figure width
+  - Position: y=0.87
 
 - **Axis Labels**:
   - All caps
   - Bold weight
-  - Cyberpunk red color
-  - 12pt font size
+  - Arasaka Red color
+  - Size: 1.0× figure width
+
+- **Tick Labels & Legend**:
+  - Regular weight
+  - Size: 0.8× figure width
+  - Arasaka Red color
 
 - **Data Labels**:
   - Regular weight
-  - 10pt font size
-  - Positioned next to data points
-  - Color matches the data series
+  - Size: 0.67× figure width
+  - Color matches data series
+  - Positioned next to points
+
+- **Credits & Sources**:
+  - Regular weight
+  - Size: 1.0× figure width
+  - Slate color
+  - Left-aligned at x=0.12
+  - Position: y=0.03
+
+## Figure Properties
+
+- Aspect ratio: 16:9 (widescreen)
+- Recommended widths: 800-1200px
+- Default margins: top=0.85 for title space
+
+## Line Plots
+
+- **Style**:
+  - Stepped lines (where='post')
+  - Markers at data points
+  - No interpolation between points
+  - Line color matches markers
 
 ## Grid & Axes
 
@@ -47,37 +81,39 @@ COLORS = {
 
 - **Axes**:
   - Left and bottom spines only
-  - Cyberpunk red color
-  - Ticks in cyberpunk red
+  - Arasaka Red color
   - Integer ticks for years
 
 ## Legend
 
 - **Style**:
-  - Slate-colored outline (#979797)
+  - Slate-colored outline
   - 1pt line width
-  - No background fill
-  - Text in cyberpunk red
-
-## Credits & Attribution
-
-- Positioned at bottom left (x=0.12)
-- Slate color
-- 10pt font size
+  - No background
+  - Text in Arasaka Red
 
 ## Usage
 
 ```python
-from edgerunner_viz.theme import set_theme, color
+from edgerunner_viz.theme import set_theme, color, text_size, text_pos
 
-# Apply the theme
+# Apply theme
 set_theme()
 
-# Access colors
-primary_color = color('cyberpunk_red')
-accent_color = color('cyberpunk_cyan')
+# Create figure (1000px at 72dpi)
+width_inches = 15
+height_inches = width_inches * 9/16
+plt.figure(figsize=(width_inches, height_inches))
+
+# Use standardized text sizes and positions
+plt.title('CHART TITLE', 
+          fontsize=width_inches * text_size('title'),
+          x=text_pos('title_x'),
+          y=text_pos('title_y'))
+
+# Use colors
+primary = color('arasaka_red')
+accent = color('electric_blue')
 ```
 
-## Example Plots
-
-See the `examples/` directory for sample visualizations using this theme. 
+See `examples/` directory for complete visualizations. 

@@ -32,7 +32,7 @@ def add_subtitle(ax, text):
             transform=ax.transAxes,
             fontsize=10,
             fontfamily=FONT_MEDIUM,
-            color=COLORS['cyberpunk_red'])
+            color=COLORS['arasaka_red'])
 
 # Plot 1: Simple line plot
 ax1 = fig.add_subplot(gs[0, 0])
