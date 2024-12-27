@@ -1,48 +1,83 @@
-# EdgeRunner Viz
+# EdgeRunner Visualization Theme
 
-A Python visualization library inspired by The Economist's Sybil library, with a cyberpunk aesthetic.
+A seaborn-compatible theme for creating cyberpunk-inspired data visualizations. This theme provides a consistent, modern aesthetic inspired by The Economist's Sybil library.
 
 ## Color Palette
 
-- Cyberpunk Red (`#F75049`)
-- Arctic (`#FFFFFF`)
-- Shadow (`#424242`)
-- Slate (`#979797`)
-- Cyberpunk Cyan (`#5EF6FF`)
-
-## Requirements
-
-- Python 3.8+
-- matplotlib
-- seaborn
-- numpy
-- pandas
-- pillow
-
-## Installation
-
-1. Clone the repository
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
+```python
+COLORS = {
+    'cyberpunk_red': '#F75049',    # Primary color for emphasis and titles
+    'arctic': '#FFFFFF',           # Pure white for high contrast elements
+    'shadow': '#424242',           # Subtle grid lines and backgrounds
+    'slate': '#979797',           # Secondary elements and borders
+    'cyberpunk_cyan': '#5EF6FF',   # Accent color for contrast
+    'background': '#000000'        # True black background
+}
 ```
+
+## Typography & Text
+
+- **Titles**: 
+  - Left-aligned
+  - Bold weight
+  - Cyberpunk red color
+  - Main title: 20pt
+  - Subtitle: 16pt
+  - Positioned at x=0.12 margin
+
+- **Axis Labels**:
+  - All caps
+  - Bold weight
+  - Cyberpunk red color
+  - 12pt font size
+
+- **Data Labels**:
+  - Regular weight
+  - 10pt font size
+  - Positioned next to data points
+  - Color matches the data series
+
+## Grid & Axes
+
+- **Grid Lines**:
+  - Horizontal only
+  - Shadow color (#424242)
+  - 30% opacity
+  - 0.5pt line width
+
+- **Axes**:
+  - Left and bottom spines only
+  - Cyberpunk red color
+  - Ticks in cyberpunk red
+  - Integer ticks for years
+
+## Legend
+
+- **Style**:
+  - Slate-colored outline (#979797)
+  - 1pt line width
+  - No background fill
+  - Text in cyberpunk red
+
+## Credits & Attribution
+
+- Positioned at bottom left (x=0.12)
+- Slate color
+- 10pt font size
 
 ## Usage
 
-See the `examples/` directory for usage examples. Basic usage:
-
 ```python
-import matplotlib.pyplot as plt
-from edgerunner_viz.theme import STYLE, COLOR_SEQUENCE
+from edgerunner_viz.theme import set_theme, color
 
-# Apply the EdgeRunner style
-plt.style.use('dark_background')
-for key, value in STYLE.items():
-    plt.rcParams[key] = value
+# Apply the theme
+set_theme()
 
-# Create your plot using COLOR_SEQUENCE colors
+# Access colors
+primary_color = color('cyberpunk_red')
+accent_color = color('cyberpunk_cyan')
 ```
 
-## Font Requirements
+## Example Plots
 
-This library uses the Rajdhani font family. Please ensure it is installed on your system. 
+See the `examples/` directory for sample visualizations using this theme. 

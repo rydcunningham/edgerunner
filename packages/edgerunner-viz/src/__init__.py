@@ -1,9 +1,6 @@
 """
 EdgeRunner Visualization Library
 """
-from .theme import COLORS, COLOR_SEQUENCE, STYLE, setup_rajdhani_fonts
+from .theme import COLORS, set_theme, color, palette
 
-# Ensure font is set up on import
-setup_rajdhani_fonts()
-
-__all__ = ['COLORS', 'COLOR_SEQUENCE', 'STYLE'] 
+__all__ = ['COLORS', 'set_theme', 'color', 'palette'] 
