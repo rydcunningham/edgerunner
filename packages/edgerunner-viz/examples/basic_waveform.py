@@ -3,6 +3,8 @@ Basic waveform example demonstrating EdgeRunner visualization theme.
 """
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.offsetbox import OffsetImage, AnchoredOffsetbox
+import matplotlib.image as mpimg
 from pathlib import Path
 import sys
 
@@ -25,6 +27,26 @@ fig = plt.figure(figsize=(width_inches, height_inches))
 
 # Create main plot with adjusted position to make room for titles
 ax = plt.subplot2grid((1, 1), (0, 0))
+
+# Configure grid with solid lines and semi-transparent background
+ax.grid(True, which='major', color=color('shadow'), linestyle='-', linewidth=0.5)
+ax.set_axisbelow(True)  # Ensure grid is behind the data
+
+# Add semi-transparent background between grid lines
+ax.axhspan(-1.2, 1.2, color=color('arasaka_red'), alpha=0.11)
+
+# Add watermark
+watermark_path = Path(__file__).parent.parent.parent.parent / 'web' / 'public' / 'img' / 'logo.png'
+if watermark_path.exists():
+    img = mpimg.imread(str(watermark_path))
+    imagebox = OffsetImage(img, zoom=0.5, alpha=0.15)
+    anchored_box = AnchoredOffsetbox(loc='center',
+                                    child=imagebox,
+                                    pad=0,
+                                    frameon=False,
+                                    bbox_to_anchor=(0.5, 0.5),
+                                    bbox_transform=fig.transFigure)
+    fig.add_artist(anchored_box)
 
 # Get the top y-coordinate of the plot in axes coordinates
 plot_top = ax.get_position().y1
@@ -56,7 +78,7 @@ plt.xticks(fontsize=width_inches * text_size('tick_label'))
 plt.yticks(fontsize=width_inches * text_size('tick_label'))
 
 # Style the legend with slate outline
-legend = plt.legend(frameon=True, fontsize=width_inches * text_size('tick_label'))
+legend = plt.legend(fontsize=width_inches * text_size('tick_label'))
 legend.get_frame().set_edgecolor(color('slate'))
 legend.get_frame().set_linewidth(1)
 

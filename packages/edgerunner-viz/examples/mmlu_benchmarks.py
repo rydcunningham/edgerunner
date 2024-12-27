@@ -3,6 +3,7 @@ Recreation of AI benchmark visualization using seaborn with EdgeRunner theme.
 """
 import seaborn as sns
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import pandas as pd
 import numpy as np
 from pathlib import Path
@@ -13,13 +14,13 @@ from adjustText import adjust_text
 
 # Add the package root to Python path
 sys.path.append(str(Path(__file__).parent.parent))
-from src.theme import set_theme, color
+from src.theme import set_theme, color, text_size
 
 # Set the EdgeRunner theme
 set_theme()
 
 # Raw data
-data = """Model,Release Date,Accuracy,Category
+scatter_data = """Model,Release Date,Accuracy,Category
 T5-Small,10/22/2019,26.7%,Open
 GPT-NeoX 20B,2/8/2022,33.6%,Open
 OPT-66B,5/1/2022,36.0%,Open
@@ -119,9 +120,8 @@ plt.xticks(date_range, [d.year for d in date_range], fontsize=width_inches * 0.8
 plt.yticks(fontsize=width_inches * 0.8)
 
 # Style the legend with slate outline
-legend = plt.legend(frameon=True, fontsize=width_inches * 0.8)
-legend.get_frame().set_edgecolor(color('slate'))
-legend.get_frame().set_linewidth(1)
+handles, labels = plt.gca().get_legend_handles_labels()
+legend = plt.legend(fontsize=width_inches * text_size('tick_label'))
 
 # Add credit text
 plt.figtext(0.12, 0.03, 'CREDIT: "Open Models Report," EPOCH.AI, Nov 2024',
@@ -135,4 +135,5 @@ adjust_text(texts,
            force_text=0.5,
            only_move={'points': (0, 0), 'text': (0, 1)},  # Only allow vertical movement
            arrowprops=None)
+
 plt.show() 

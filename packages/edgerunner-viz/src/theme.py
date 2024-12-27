@@ -29,12 +29,12 @@ COLORS = {
 
 # Typography scale (relative to figure width)
 TEXT_SCALE = {
-    'title': 1.6,        # Main title
-    'subtitle': 0.8,     # Subtitle
-    'axis_label': 1.0,   # Axis labels
-    'tick_label': 0.8,   # Tick labels
-    'data_label': 0.67,  # Data point labels
-    'credit': 1.0,       # Credit text
+    'title': 1.9,        # Main title
+    'subtitle': 1.0,     # Subtitle
+    'axis_label': 1.5,   # Axis labels
+    'tick_label': 1.5,   # Tick labels
+    'data_label': 1.3,   # Data point labels
+    'credit': 1.2,       # Credit text
 }
 
 # Standard positions
@@ -57,16 +57,16 @@ def set_theme():
         'grid.color': COLORS['shadow'],
         'grid.linestyle': '-',
         'grid.linewidth': 0.5,
-        'grid.alpha': 0.3,
+        'grid.alpha': 1.0,
         
         # Text
         'text.color': COLORS['arasaka_red'],
         'font.family': ['Rajdhani'],
-        'font.size': 12,
+        'font.size': 14,
         
         # Axes
         'axes.grid': True,
-        'axes.grid.axis': 'y',
+        'axes.grid.axis': 'both',  # Show both x and y grid
         'axes.edgecolor': COLORS['arasaka_red'],
         'axes.labelcolor': COLORS['arasaka_red'],
         'axes.titlecolor': COLORS['arasaka_red'],
@@ -74,14 +74,14 @@ def set_theme():
         'axes.spines.right': False,
         'axes.spines.left': True,
         'axes.spines.bottom': True,
+        'axes.axisbelow': True,  # Grid lines below data
+        
+        # Background fill
+        'axes.facecolor': f"{COLORS['arasaka_red']}1c",  # 11% opacity in hex
         
         # Ticks
         'xtick.color': COLORS['arasaka_red'],
         'ytick.color': COLORS['arasaka_red'],
-        
-        # Legend
-        'legend.frameon': False,
-        'legend.labelcolor': COLORS['arasaka_red'],
         
         # Font weights
         'font.weight': 'medium',
@@ -109,6 +109,12 @@ def set_theme():
     plt.rcParams['font.weight'] = 'medium'
     plt.rcParams['axes.titleweight'] = 'semibold'
     plt.rcParams['axes.labelweight'] = 'medium'
+
+    # Add legend settings here with rcParams
+    plt.rcParams['legend.frameon'] = True
+    plt.rcParams['legend.facecolor'] = COLORS['background']
+    plt.rcParams['legend.edgecolor'] = COLORS['slate']
+    plt.rcParams['legend.labelcolor'] = 'linecolor'
 
 def color(name):
     """Get a color from the palette by name."""
