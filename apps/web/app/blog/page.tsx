@@ -7,9 +7,9 @@ export default function Blog() {
   return (
     <div className="space-y-12">
       <header className="space-y-2">
-        <h2 className="text-xl font-mono">machine yearning</h2>
+        <h2 className="text-xl font-mono">/blog</h2>
         <p className="text-muted-foreground">
-          subscribe via{' '}
+          subscribe to Machine Yearning via{' '}
           <a href="https://machineyearning.substack.com" className="text-primary hover:underline">
             Substack →
           </a>{' '}
