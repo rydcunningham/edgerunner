@@ -1,0 +1,35 @@
+# ARASAKA Theme Preset for EdgeRunner Visualization
+name: ARASAKA
+description: Cyberpunk-inspired dark theme with high-contrast colors
+
+colors:
+  primary: '#F75049'     # Arasaka Red
+  secondary: '#5EF6FF'   # Electric Blue
+  background: '#000000'  # Black
+  text: '#F75049'        # Arasaka Red
+  grid: '#424242'        # Shadow
+  accent_1: '#FFFFFF'    # White
+  accent_2: '#979797'    # Gunmetal
+
+text_scale:
+  title: 1.9
+  subtitle: 1.0
+  axis_label: 1.5
+  tick_label: 1.5
+  data_label: 1.3
+  credit: 1.2
+
+text_positions:
+  title_x: 0.12
+  title_y: 0.91
+  subtitle_y: 0.87
+  credit_y: 0.03
+
+figure:
+  width: 15
+  aspect_ratio: 0.5625
+  grid:
+    style: '-'
+    width: 0.5
+    alpha: 1.0
+  background_opacity: 0.11 

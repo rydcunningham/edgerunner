@@ -14,10 +14,10 @@ from adjustText import adjust_text
 
 # Add the package root to Python path
 sys.path.append(str(Path(__file__).parent.parent))
-from src.theme import set_theme, color, text_size
+from src.theme import set_theme
 
 # Set the EdgeRunner theme
-set_theme()
+theme = set_theme('ARASAKA')
 
 # Raw data
 scatter_data = """Model,Release Date,Accuracy,Category
@@ -42,16 +42,16 @@ GPT-4o,5/12/2024,87.2%,Closed
 Claude 3.5 Sonnet,6/19/2024,88.7%,Closed"""
 
 # Convert to DataFrame
-df = pd.read_csv(StringIO(data))
+df = pd.read_csv(StringIO(scatter_data))
 
 # Clean up the data
 df['Release Date'] = pd.to_datetime(df['Release Date'], format='%m/%d/%Y')
 df['Accuracy'] = df['Accuracy'].str.rstrip('%').astype(float)
 df['Year'] = df['Release Date'].dt.year
 
-# Create figure with 16:9 aspect ratio
-width_inches = 15
-height_inches = width_inches * 9/16
+# Create figure with theme-specified dimensions
+width_inches = theme.figure.width
+height_inches = width_inches * theme.figure.aspect_ratio
 plt.figure(figsize=(width_inches, height_inches))
 
 # Create main plot with adjusted position to make room for titles
@@ -64,7 +64,7 @@ texts = []
 # Plot lines for each type
 for category, marker in [('Closed', 'o'), ('Open', '^')]:
     data = df[df['Category'] == category]
-    color_name = 'arasaka_red' if category == 'Closed' else 'electric_blue'
+    color_name = 'primary' if category == 'Closed' else 'secondary'
     
     # Sort by date for proper line plotting
     data = data.sort_values('Release Date')
@@ -72,12 +72,12 @@ for category, marker in [('Closed', 'o'), ('Open', '^')]:
     # Plot the lines and points with steps
     plt.step(data['Release Date'], data['Accuracy'],
             where='post',
-            color=color(color_name),
+            color=theme.color(color_name),
             label=category)
     
     # Add markers
     plt.plot(data['Release Date'], data['Accuracy'],
-            color=color(color_name),
+            color=theme.color(color_name),
             marker=marker,
             linestyle='none')
 
@@ -90,7 +90,7 @@ for category, marker in [('Closed', 'o'), ('Open', '^')]:
         text = plt.text(row['Release Date'] + offset_x, 
                        row['Accuracy'] + offset_y,
                        row['Model'],
-                       color=color(color_name),
+                       color=theme.color(color_name),
                        va='center',
                        ha='right' if category == 'Closed' else 'left',  # Align text towards the point
                        fontsize=width_inches * 0.67)
@@ -98,13 +98,13 @@ for category, marker in [('Closed', 'o'), ('Open', '^')]:
 
 # Add title and subtitle
 fig = plt.gcf()
-title_size = width_inches * 1.6
-subtitle_size = width_inches * 0.8
+title_size = width_inches * theme.text_size('title')
+subtitle_size = width_inches * theme.text_size('subtitle')
 
-fig.text(0.12, 0.91, 'TOP-PERFORMING OPEN AND CLOSED AI MODELS',
-         fontsize=title_size, fontweight='bold', color=color('arasaka_red'))
-fig.text(0.12, 0.87, 'ON MMLU BENCHMARK',
-         fontsize=subtitle_size, color=color('arasaka_red'))
+fig.text(theme.text_pos('title_x'), theme.text_pos('title_y'), 'TOP-PERFORMING OPEN AND CLOSED AI MODELS',
+         fontsize=title_size, fontweight='bold', color=theme.color('primary'))
+fig.text(theme.text_pos('title_x'), theme.text_pos('subtitle_y'), 'ON MMLU BENCHMARK',
+         fontsize=subtitle_size, color=theme.color('primary'))
 
 # Customize the plot
 plt.ylabel('ACCURACY', fontsize=width_inches)
@@ -121,11 +121,12 @@ plt.yticks(fontsize=width_inches * 0.8)
 
 # Style the legend with slate outline
 handles, labels = plt.gca().get_legend_handles_labels()
-legend = plt.legend(fontsize=width_inches * text_size('tick_label'))
+legend = plt.legend(fontsize=width_inches * theme.text_size('tick_label'))
 
 # Add credit text
-plt.figtext(0.12, 0.03, 'CREDIT: "Open Models Report," EPOCH.AI, Nov 2024',
-            fontsize=width_inches * 1, color=color('slate'))
+plt.figtext(theme.text_pos('title_x'), theme.text_pos('credit_y'), 
+            'CREDIT: "Open Models Report," EPOCH.AI, Nov 2024',
+            fontsize=width_inches * 1, color=theme.color('accent_2'))
 
 # Adjust text positions to avoid overlaps while maintaining offset
 adjust_text(texts,

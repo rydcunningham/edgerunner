@@ -8,20 +8,18 @@ import sys
 
 # Add the package root to Python path
 sys.path.append(str(Path(__file__).parent.parent))
-from src.theme import set_theme, color, text_size, text_pos
+from src.theme import set_theme
 
-# Set the EdgeRunner theme
-set_theme()
+# Set EdgeRunner theme
+theme = set_theme('ARASAKA')
 
 # Create sample data
 categories = ['NEURAL', 'QUANTUM', 'HYBRID', 'ANALOG']
 values = [45, 25, 20, 10]
-colors = [color('arasaka_red'), color('electric_blue'), 
-          color('shadow'), color('slate')]
 
-# Create figure with 16:9 aspect ratio
-width_inches = 15
-height_inches = width_inches * 9/16
+# Create figure with theme-specified dimensions
+width_inches = theme.figure.width
+height_inches = width_inches * theme.figure.aspect_ratio
 plt.figure(figsize=(width_inches, height_inches))
 
 # Create main plot with adjusted position to make room for titles
@@ -36,7 +34,8 @@ def make_autopct(values):
 
 # Create donut chart
 wedges, texts = plt.pie(values, 
-                       colors=colors,
+                       colors=[theme.color('primary'), theme.color('secondary'), 
+                               theme.color('grid'), theme.color('accent_2')],
                        labels=[f'{cat} • {val}%' for cat, val in zip(categories, values)],
                        labeldistance=1.2,   # Move labels outside
                        wedgeprops=dict(
@@ -44,7 +43,7 @@ wedges, texts = plt.pie(values,
                            edgecolor='black',  # Border color
                            linewidth=1.2    # Border width
                        ),
-                       textprops=dict(color=color('arasaka_red')),
+                       textprops=dict(color=theme.color('primary')),
                        rotatelabels=False)
 
 # Add connecting lines
@@ -62,31 +61,31 @@ for wedge in wedges:
     # Create the line
     con = plt.plot([x * inner_radius, x * outer_radius], 
                    [y * inner_radius, y * outer_radius],
-                   color=color('arasaka_red'),
+                   color=theme.color('primary'),
                    linewidth=1)
 
 # Style the labels with larger text
-label_size = width_inches * text_size('axis_label')  # Using axis_label size
+label_size = width_inches * theme.text_size('axis_label')
 plt.setp(texts, size=label_size, weight='medium')
 
 # Add title and subtitle
 fig = plt.gcf()
-fig.text(text_pos('title_x'), text_pos('title_y'), 'COMPUTING PARADIGM DISTRIBUTION',
-         fontsize=width_inches * text_size('title'), fontweight='bold', color=color('arasaka_red'))
-fig.text(text_pos('title_x'), text_pos('subtitle_y'), 'MARKET SHARE BY ARCHITECTURE TYPE',
-         fontsize=width_inches * text_size('subtitle'), color=color('arasaka_red'))
+fig.text(theme.text_pos('title_x'), theme.text_pos('title_y'), 'COMPUTING PARADIGM DISTRIBUTION',
+         fontsize=width_inches * theme.text_size('title'), fontweight='bold', color=theme.color('primary'))
+fig.text(theme.text_pos('title_x'), theme.text_pos('subtitle_y'), 'MARKET SHARE BY ARCHITECTURE TYPE',
+         fontsize=width_inches * theme.text_size('subtitle'), color=theme.color('primary'))
 
 # Add center text
 plt.text(0, 0, '2024', 
          ha='center', va='center',
-         fontsize=width_inches * text_size('title'),
+         fontsize=width_inches * theme.text_size('title'),
          fontweight='bold',
-         color=color('arasaka_red'))
+         color=theme.color('primary'))
 
 # Add credit text
-plt.figtext(text_pos('title_x'), text_pos('credit_y'),
+plt.figtext(theme.text_pos('title_x'), theme.text_pos('credit_y'),
             'CREDIT: EdgeRunner Market Analysis',
-            fontsize=width_inches * text_size('credit'), color=color('slate'))
+            fontsize=width_inches * theme.text_size('credit'), color=theme.color('accent_2'))
 
 # Equal aspect ratio ensures circular plot
 plt.axis('equal')

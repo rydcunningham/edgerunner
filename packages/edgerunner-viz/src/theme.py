@@ -1,13 +1,15 @@
 """
 EdgeRunner visualization theme module.
-Defines a seaborn-compatible theme with cyberpunk aesthetics.
+Defines a seaborn-compatible theme system with multiple presets.
 """
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 from pathlib import Path
+from typing import Dict, Any, Optional
+import yaml
 
-# Add Rajdhani font
+# Font setup
 FONT_DIR = Path(__file__).parent / 'fonts'
 RAJDHANI_MEDIUM = str(FONT_DIR / 'Rajdhani-Medium.ttf')
 RAJDHANI_SEMIBOLD = str(FONT_DIR / 'Rajdhani-SemiBold.ttf')
@@ -17,117 +19,99 @@ for font_path in [RAJDHANI_MEDIUM, RAJDHANI_SEMIBOLD]:
     if Path(font_path).exists():
         fm.fontManager.addfont(font_path)
 
-# Color palette
-COLORS = {
-    'arasaka_red': '#F75049',
-    'arctic': '#FFFFFF',
-    'shadow': '#424242',
-    'slate': '#979797',
-    'electric_blue': '#5EF6FF',
-    'background': '#000000'
-}
+# Theme directory
+THEME_DIR = Path(__file__).parent / 'themes'
 
-# Typography scale (relative to figure width)
-TEXT_SCALE = {
-    'title': 1.9,        # Main title
-    'subtitle': 1.0,     # Subtitle
-    'axis_label': 1.5,   # Axis labels
-    'tick_label': 1.5,   # Tick labels
-    'data_label': 1.3,   # Data point labels
-    'credit': 1.2,       # Credit text
-}
+def load_theme(name: str = 'ARASAKA') -> Dict[str, Any]:
+    """Load a theme from a YAML file."""
+    theme_file = THEME_DIR / f"{name.lower()}_theme.yaml"
+    
+    try:
+        with open(theme_file, 'r') as f:
+            return yaml.safe_load(f)
+    except FileNotFoundError:
+        raise ValueError(f"Theme '{name}' not found")
 
-# Standard positions
-TEXT_POSITIONS = {
-    'title_x': 0.12,     # Left alignment position
-    'title_y': 0.91,     # Title y-position
-    'subtitle_y': 0.87,  # Subtitle y-position (closer to title)
-    'credit_y': 0.03,    # Credit text y-position
-}
+class Theme:
+    """Dynamic theme object with easy access to theme properties."""
+    def __init__(self, theme_config: Dict[str, Any]):
+        self._config = theme_config
+    
+    def __getattr__(self, name):
+        """Dynamically access nested theme properties."""
+        if name in self._config:
+            value = self._config[name]
+            return Theme(value) if isinstance(value, dict) else value
+        
+        for key, value in self._config.items():
+            if isinstance(value, dict) and name in value:
+                return value[name]
+        
+        raise AttributeError(f"No attribute '{name}' in theme")
+    
+    def color(self, name: Optional[str] = None):
+        """Get a color from the theme palette."""
+        colors = self._config.get('colors', {})
+        return colors if name is None else colors.get(name, colors.get('primary', '#000000'))
+    
+    def text_size(self, name: str):
+        """Get a standardized text size."""
+        return self._config.get('text_scale', {}).get(name, 1.0)
+    
+    def text_pos(self, name: str):
+        """Get a standardized text position."""
+        return self._config.get('text_positions', {}).get(name, 0.0)
 
-def set_theme():
-    """Set the EdgeRunner theme for all subsequent plots."""
-    # Create the style dictionary
+def set_theme(name: str = 'ARASAKA') -> Theme:
+    """Set the theme for subsequent plots and return a Theme object."""
+    theme_config = load_theme(name)
+    _apply_theme(theme_config)
+    return Theme(theme_config)
+
+def _apply_theme(theme: Dict[str, Any]):
+    """Apply the theme configuration to matplotlib and seaborn."""
+    colors = theme['colors']
+    
     style = {
-        # Figure
-        'figure.facecolor': COLORS['background'],
-        'axes.facecolor': COLORS['background'],
-        
-        # Grid
-        'grid.color': COLORS['shadow'],
-        'grid.linestyle': '-',
-        'grid.linewidth': 0.5,
-        'grid.alpha': 1.0,
-        
-        # Text
-        'text.color': COLORS['arasaka_red'],
+        'figure.facecolor': colors['background'],
+        'axes.facecolor': colors['background'],
+        'grid.color': colors['grid'],
+        'text.color': colors['text'],
         'font.family': ['Rajdhani'],
-        'font.size': 14,
-        
-        # Axes
+        'axes.edgecolor': colors['primary'],
+        'axes.labelcolor': colors['primary'],
+        'axes.titlecolor': colors['primary'],
+        'xtick.color': colors['primary'],
+        'ytick.color': colors['primary'],
         'axes.grid': True,
-        'axes.grid.axis': 'both',  # Show both x and y grid
-        'axes.edgecolor': COLORS['arasaka_red'],
-        'axes.labelcolor': COLORS['arasaka_red'],
-        'axes.titlecolor': COLORS['arasaka_red'],
         'axes.spines.top': False,
         'axes.spines.right': False,
-        'axes.spines.left': True,
-        'axes.spines.bottom': True,
-        'axes.axisbelow': True,  # Grid lines below data
-        
-        # Background fill
-        'axes.facecolor': f"{COLORS['arasaka_red']}1c",  # 11% opacity in hex
-        
-        # Ticks
-        'xtick.color': COLORS['arasaka_red'],
-        'ytick.color': COLORS['arasaka_red'],
-        
-        # Font weights
-        'font.weight': 'medium',
-        'axes.titleweight': 'semibold',
-        'axes.labelweight': 'medium',
     }
     
-    # Set style and context
     sns.set_theme(style=style, context='notebook')
+    sns.set_palette(list(colors.values()))
     
-    # Set default color palette
-    sns.set_palette([
-        COLORS['arasaka_red'],
-        COLORS['electric_blue'],
-        COLORS['arctic'],
-        COLORS['slate'],
-        COLORS['shadow']
-    ])
-    
-    # Set default figure size
-    plt.rcParams['figure.figsize'] = (12, 6)
-    
-    # Additional matplotlib settings
-    plt.rcParams['font.family'] = 'Rajdhani'
-    plt.rcParams['font.weight'] = 'medium'
-    plt.rcParams['axes.titleweight'] = 'semibold'
-    plt.rcParams['axes.labelweight'] = 'medium'
+    plt.rcParams.update({
+        'figure.figsize': (12, 6),
+        'font.family': 'Rajdhani',
+        'legend.frameon': True,
+        'legend.facecolor': colors['background'],
+        'legend.edgecolor': colors['grid'],
+    })
 
-    # Add legend settings here with rcParams
-    plt.rcParams['legend.frameon'] = True
-    plt.rcParams['legend.facecolor'] = COLORS['background']
-    plt.rcParams['legend.edgecolor'] = COLORS['slate']
-    plt.rcParams['legend.labelcolor'] = 'linecolor'
+# Utility functions for direct color, text size, and palette access
+def color(name: Optional[str] = None, theme: str = 'ARASAKA'):
+    """Get a color from the theme palette."""
+    return load_theme(theme)['colors'].get(name) if name else load_theme(theme)['colors']
 
-def color(name):
-    """Get a color from the palette by name."""
-    return COLORS[name]
+def text_size(name: str, theme: str = 'ARASAKA'):
+    """Get a standardized text size."""
+    return load_theme(theme)['text_scale'][name]
 
-def text_size(name):
-    """Get a standardized text size relative to figure width."""
-    return TEXT_SCALE[name]
-
-def text_pos(name):
+def text_pos(name: str, theme: str = 'ARASAKA'):
     """Get a standardized text position."""
-    return TEXT_POSITIONS[name]
+    return load_theme(theme)['text_positions'][name]
 
-def palette():
-    """Get the full color palette as a list."""
-    return list(COLORS.values()) 
+def palette(theme: str = 'ARASAKA'):
+    """Get the full color palette."""
+    return load_theme(theme)['colors'] 
