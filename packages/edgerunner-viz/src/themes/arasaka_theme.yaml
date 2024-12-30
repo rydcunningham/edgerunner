@@ -2,6 +2,16 @@
 name: ARASAKA
 description: Cyberpunk-inspired dark theme with high-contrast colors
 
+fonts:
+  primary:
+    family: 'Rajdhani' 
+    regular: 'Rajdhani-Medium.ttf'
+    bold: 'Rajdhani-SemiBold.ttf'
+  fallback:
+    - 'Arial'
+    - 'Helvetica'
+    - 'sans-serif'
+
 colors:
   primary: '#F75049'     # Arasaka Red
   secondary: '#5EF6FF'   # Electric Blue

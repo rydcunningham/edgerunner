@@ -11,13 +11,22 @@ import yaml
 
 # Font setup
 FONT_DIR = Path(__file__).parent / 'fonts'
-RAJDHANI_MEDIUM = str(FONT_DIR / 'Rajdhani-Medium.ttf')
-RAJDHANI_SEMIBOLD = str(FONT_DIR / 'Rajdhani-SemiBold.ttf')
 
-# Add fonts to matplotlib
-for font_path in [RAJDHANI_MEDIUM, RAJDHANI_SEMIBOLD]:
-    if Path(font_path).exists():
-        fm.fontManager.addfont(font_path)
+def load_theme_fonts(theme_config: Dict[str, Any]):
+    """
+    Load fonts specified in the theme configuration
+    """
+    fonts = theme_config.get('fonts', {})
+    primary_fonts = fonts.get('primary', {})
+    font_family = primary_fonts.get('family')
+    
+    # Load primary fonts
+    for font_type in ['regular', 'bold']:
+        font_filename = primary_fonts.get(font_type)
+        if font_filename:
+            font_path = FONT_DIR / font_family / font_filename
+            if font_path.exists():
+                fm.fontManager.addfont(str(font_path))
 
 # Theme directory
 THEME_DIR = Path(__file__).parent / 'themes'
@@ -54,6 +63,11 @@ class Theme:
         colors = self._config.get('colors', {})
         return colors if name is None else colors.get(name, colors.get('primary', '#000000'))
     
+    def fonts(self, name: Optional[str] = None):
+        """Get fonts from the theme configuration."""
+        fonts = self._config.get('fonts', {}).get('primary', {})
+        return fonts if name is None else fonts.get(name)
+    
     def text_size(self, name: str):
         """Get a standardized text size."""
         return self._config.get('text_scale', {}).get(name, 1.0)
@@ -71,13 +85,17 @@ def set_theme(name: str = 'ARASAKA') -> Theme:
 def _apply_theme(theme: Dict[str, Any]):
     """Apply the theme configuration to matplotlib and seaborn."""
     colors = theme['colors']
+    fonts = theme['fonts']
+    
+    # Explicitly load theme-specific fonts
+    load_theme_fonts(theme)
     
     style = {
         'figure.facecolor': colors['background'],
         'axes.facecolor': colors['background'],
         'grid.color': colors['grid'],
         'text.color': colors['text'],
-        'font.family': ['Rajdhani'],
+        'font.family': fonts['primary']['family'],
         'axes.edgecolor': colors['primary'],
         'axes.labelcolor': colors['primary'],
         'axes.titlecolor': colors['primary'],
@@ -93,10 +111,12 @@ def _apply_theme(theme: Dict[str, Any]):
     
     plt.rcParams.update({
         'figure.figsize': (12, 6),
-        'font.family': 'Rajdhani',
+        'font.family': fonts['primary']['family'],
         'legend.frameon': True,
         'legend.facecolor': colors['background'],
         'legend.edgecolor': colors['grid'],
+        'legend.fancybox': False,  # Restore default legend style
+        'legend.loc': 'best',  # Preserve legend positioning
     })
 
 # Utility functions for direct color, text size, and palette access

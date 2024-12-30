@@ -35,7 +35,7 @@ ax.grid(True, which='major',
 ax.set_axisbelow(True)  # Ensure grid is behind the data
 
 # Add semi-transparent background between grid lines
-ax.axhspan(-1.2, 1.2, color=theme.color('primary'), 
+ax.axhspan(-1.2, 1.2, color=theme.color('background'), 
            alpha=theme.figure.background_opacity)
 
 # Get the top y-coordinate of the plot in axes coordinates
@@ -69,7 +69,7 @@ plt.yticks(fontsize=width_inches * theme.text_size('tick_label'))
 
 # Style the legend with slate outline
 legend = plt.legend(fontsize=width_inches * theme.text_size('tick_label'))
-legend.get_frame().set_edgecolor(theme.color('slate'))
+#legend.get_frame().set_edgecolor(theme.color('slate'))
 legend.get_frame().set_linewidth(1)
 
 # Add credit text

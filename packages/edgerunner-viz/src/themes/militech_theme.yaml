@@ -1,6 +1,16 @@
-# ARASAKA Theme Preset for EdgeRunner Visualization
-name: ARASAKA
-description: Cyberpunk-inspired dark theme with high-contrast colors
+# MILITECH Theme Preset for EdgeRunner Visualization
+name: MILITECH
+description: Cyberpunk-inspired theme with paramilitary vibes
+
+fonts:
+  primary: 
+    family: 'Rajdhani'
+    regular: 'Rajdhani-Medium.ttf'
+    bold: 'Rajdhani-SemiBold.ttf'
+  fallback:
+    - 'Arial'
+    - 'Helvetica'
+    - 'sans-serif'
 
 colors:
   primary: '#D3B616'     # Militech Gold
