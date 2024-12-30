@@ -1,67 +1,85 @@
-# Cortex
+# Cortex Content Scraper API
 
-A service that processes URLs from webhooks, extracts content using Firecrawl.dev, and stores structured data in Supabase.
+## Overview
+Cortex is a powerful web content scraping API that converts web URLs into structured, machine-readable content.
 
 ## Features
+- Scrape web pages, PDFs, and various content types
+- Extract metadata, markdown content, images, and links
+- Support for multiple content types (research papers, blogs, news, etc.)
 
-- Webhook endpoint for URL processing
-- Content extraction using Firecrawl.dev API
-- Markdown and image extraction
-- Structured data storage in Supabase
-- Async processing
+## Prerequisites
+- Python 3.9+
+- pip
 
-## Setup
-
-1. Create a virtual environment and activate it:
+## Installation
+1. Clone the repository
+2. Create a virtual environment
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
 ```
 
-2. Install dependencies:
+3. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Create a `.env` file with the following variables:
-```
-FIRECRAWL_API_KEY=your_firecrawl_api_key
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_KEY=your_supabase_anon_key
-```
+## Running the API and Web App
 
-4. Run the application:
+### Options
 ```bash
-uvicorn app.main:app --reload
+# Run web app only (default port 11168)
+python main.py app
+
+# Run API only (default port 11169)
+python main.py api
+
+# Run both web app and API simultaneously
+python main.py both
+
+# Specify custom ports
+python main.py app --app-port 8080
+python main.py api --api-port 8081
+python main.py both --app-port 8080 --api-port 8081
 ```
 
-## API Endpoints
+### Web App
+- Accessible at `http://localhost:11168`
+- Provides a user-friendly interface for URL scraping
 
-### POST /webhook
-Accepts a URL and processes it through Firecrawl.dev, storing the results in Supabase.
+### API
+- Accessible at `http://localhost:11169`
+- JSON endpoint for programmatic URL scraping
+- Swagger UI available at `/docs`
 
-Request body:
+## API Endpoint
+### POST `/scrape`
+Scrape content from a given URL
+
+#### Request Body
 ```json
 {
-    "url": "https://example.com/article"
+    "url": "https://example.com/article",
+    "added_by": "optional_user_identifier"
 }
 ```
 
-### GET /health
-Health check endpoint.
+#### Response
+A JSON object containing:
+- `url`: Original URL
+- `domain`: Website domain
+- `date_added`: Timestamp of scraping
+- `date_published`: Original publication date
+- `authors`: List of authors
+- `type`: Content type (WEBSITE, RESEARCH_PAPER, etc.)
+- `markdown_content`: Extracted text in markdown
+- `images`: List of images with URLs and captions
+- `metadata`: Additional content metadata
 
-## Database Schema
+## Error Handling
+- 400 Bad Request: Invalid URL or scraping failure
+- Detailed error messages in response body
 
-The Supabase database should have a `content` table with the following structure:
-
-```sql
-create table content (
-    id uuid default uuid_generate_v4() primary key,
-    url text not null,
-    title text not null,
-    markdown text not null,
-    images jsonb,
-    metadata jsonb,
-    created_at timestamp with time zone default timezone('utc'::text, now())
-);
-```
+## Contributing
+Please read CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests.
