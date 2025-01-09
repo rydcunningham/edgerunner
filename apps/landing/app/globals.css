@@ -8,7 +8,6 @@
   }
 }
 
-/* Loading screen animations (preserved but commented out)
 @keyframes fadeOut {
   0% {
     opacity: 1;
@@ -20,7 +19,6 @@
     opacity: 0;
   }
 }
-*/
 
 @keyframes progress {
   0% {
@@ -95,22 +93,19 @@
   }
 }
 
-/* Loading screen styles (preserved but commented out)
 .loading-screen {
-  animation: fadeOut 1.2s ease-in forwards;
+  animation: fadeOut 1s ease-in forwards;
 }
-*/
 
-/* Top right progress bar */
-.top-progress {
+.progress-container {
   width: 202px;
-  height: 10px;
+  height: 16px;
   background-color: black;
   border: 1px solid #F75049;
   padding: 1px;
 }
 
-.top-progress-bar {
+.progress-bar {
   height: 100%;
   background-image: repeating-linear-gradient(
     to right,
@@ -119,30 +114,8 @@
     transparent 8px,
     transparent 10px
   );
-  animation: progress 0.6s steps(1, end);
+  animation: progress 0.8s steps(1, end);
 }
-
-/* Previous progress bar styles (preserved but commented out)
-.progress-container {
-  height: 12px;
-  background-color: black;
-  border: 1px solid #F75049;
-  padding: 2px;
-}
-
-.progress-bar {
-  height: 100%;
-  background-image: repeating-linear-gradient(
-    to right,
-    #F75049 0px,
-    #F75049 4px,
-    transparent 4px,
-    transparent 6px
-  );
-  animation: progress 0.6s steps(1, end);
-  width: 0%;
-}
-*/
 
 .left-bar-animation {
   opacity: 0;

@@ -6,27 +6,20 @@ export default function Page() {
 
   return (
     <>
-      {/* Loading Screen (preserved but commented out)
+      {/* Loading Screen */}
       <div className="loading-screen fixed inset-0 z-50 flex items-center justify-center bg-black">
-        <div className="w-[20vw]">
+        <div className="w-[202px]">
+          <p className="text-[#F75049] text-sm tracking-wider mb-2">LOADING...</p>
           <div className="progress-container">
             <div className="progress-bar" />
           </div>
         </div>
       </div>
-      */}
 
       {/* Main Content */}
       <div className="min-h-screen relative flex flex-col">
-        {/* Top progress bar */}
-        <div className="fixed top-8 right-24 z-10">
-          <div className="top-progress">
-            <div className="top-progress-bar" />
-          </div>
-        </div>
-
         {/* Navigation */}
-        <nav className="fixed top-8 left-24 z-10">
+        <nav className="fixed top-8 left-6 z-10">
           <ul className="flex space-x-8">
             <li>
               <a href="#" className="text-white/30 hover:text-[#F75049] active:text-[#F75049] text-sm uppercase tracking-wider transition-colors">
@@ -59,7 +52,7 @@ export default function Page() {
           <div className="space-y-4 text-left">
             <h2 className="text-white/90 text-2xl font-medium">Welcome to Edgerunner</h2>
             <p className="text-white/70 text-lg">
-              Pushing the boundaries of what's possible
+              UNDER CONSTRUCTION
             </p>
             <p className="text-white/50 text-base">
               Full site launching soon
@@ -77,7 +70,7 @@ export default function Page() {
           <img
             src="assets/left bar.svg"
             alt="Decorative left bar"
-            className="h-[50vh] w-auto left-bar-animation"
+            className="h-[50vh] w-auto"
           />
         </div>
 
@@ -95,7 +88,7 @@ export default function Page() {
           <img
             src="assets/footer bar.svg"
             alt="Decorative footer bar"
-            className="w-full h-auto footer-bar-animation"
+            className="w-full h-auto"
           />
         </div>
 
