@@ -1,9 +1,9 @@
 import React from 'react'
 import Link from 'next/link'
-import { getBlogPosts } from '../../lib/blog'
+import { getAllPosts } from '../../lib/blog'
 
 export default function Blog() {
-  const posts = getBlogPosts()
+  const posts = getAllPosts()
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -33,8 +33,6 @@ export default function Blog() {
               </h3>
               <div className="flex gap-4 text-sm text-white/30">
                 <span>{post.date}</span>
-                <span>•</span>
-                <span>{post.readTime}</span>
               </div>
               <p className="text-white/50 text-base">
                 {post.excerpt}
