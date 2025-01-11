@@ -4,13 +4,6 @@ const nextConfig = {
   experimental: {
     externalDir: true,
     serverComponentsExternalPackages: ['tailwindcss']
-  },
-  webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@/lib': './lib'
-    }
-    return config
   }
 }
 
