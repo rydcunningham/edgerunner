@@ -1,15 +1,14 @@
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { getBlogPosts } from '../../../lib/blog'
+import { getPostData } from '../../../lib/blog'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
 import type { Components } from 'react-markdown'
 
 export default function BlogPost({ params }: { params: { slug: string } }) {
-  const posts = getBlogPosts()
-  const post = posts.find(post => post.slug === params.slug)
+  const post = getPostData(params.slug)
 
   if (!post) {
     return (
@@ -85,8 +84,6 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
           <h1 className="text-white/90 text-3xl font-medium mb-4">{post.title}</h1>
           <div className="flex gap-4 text-sm text-white/30">
             <span>{post.date}</span>
-            <span>•</span>
-            <span>{post.readTime}</span>
           </div>
         </header>
 
@@ -97,7 +94,7 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
             rehypePlugins={[rehypeRaw]}
             components={components}
           >
-            {post.content}
+            {post.contentHtml}
           </ReactMarkdown>
         </div>
       </article>
