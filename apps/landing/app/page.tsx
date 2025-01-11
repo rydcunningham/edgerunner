@@ -13,17 +13,14 @@ export default function Page() {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col items-left justify-center px-24 pl-48">
+      <div className="flex-1 flex flex-col items-left justify-center px-24 pl-24">
         <img
           src="img/edgerunner_wordmark.png"
           alt="edgerunner"
           className="w-72 h-auto object-contain mb-8"
         />
         <div className="space-y-4 text-left">
-          <h2 className="text-white/90 text-2xl font-medium">Welcome to Edgerunner</h2>
-          <p className="text-white/70 text-lg">
-            Pushing the boundaries of what's possible
-          </p>
+          <h2 className="text-white/90 text-2xl font-medium">EDGERUNNER VENTURES</h2>
           <p className="text-white/50 text-base">
             Full site launching soon
           </p>

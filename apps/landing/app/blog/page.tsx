@@ -6,9 +6,9 @@ export default function Blog() {
   const posts = getBlogPosts()
 
   return (
-    <div className="min-h-screen flex flex-col px-24">
-      {/* Header */}
-      <div className="mt-32 mb-16">
+    <div className="min-h-screen flex flex-col">
+      {/* Fixed Header Content */}
+      <div className="fixed top-24 left-24 right-24 z-40">
         <h2 className="text-white/90 text-2xl font-medium mb-4">Machine Yearning</h2>
         <p className="text-white/50">
           Subscribe via{' '}
@@ -23,8 +23,8 @@ export default function Blog() {
         </p>
       </div>
 
-      {/* Posts */}
-      <div className="space-y-12">
+      {/* Scrollable Posts */}
+      <div className="mt-56 px-24 space-y-12">
         {posts.map((post) => (
           <article key={post.slug} className="group">
             <Link href={`/blog/${post.slug}`} className="block space-y-3">

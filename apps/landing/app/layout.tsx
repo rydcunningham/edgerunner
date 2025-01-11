@@ -26,11 +26,16 @@ export default function RootLayout({
     <html lang="en" className={rajdhani.className}>
       <body className="min-h-screen relative bg-black">
         {/* Navigation */}
-        <nav className="fixed top-8 left-24 z-[100]">
-          <ul className="flex space-x-8">
+        <nav className="fixed top-0 left-0 right-0 z-[100] bg-black/30 py-8">
+          <ul className="flex space-x-8 px-24">
             <li>
               <Link href="/" className="text-white/30 hover:text-[#F75049] text-sm uppercase tracking-wider">
                 Home
+              </Link>
+            </li>
+            <li>
+              <Link href="/bio" className="text-white/30 hover:text-[#F75049] text-sm uppercase tracking-wider">
+                Bio
               </Link>
             </li>
             <li>
@@ -61,16 +66,7 @@ export default function RootLayout({
           <img
             src="assets/left bar.svg"
             alt="Decorative left bar"
-            className="h-[50vh] w-auto left-bar-animation"
-          />
-        </div>
-
-        {/* Footer bar */}
-        <div className="fixed bottom-12 left-9 right-9 z-30 pointer-events-none">
-          <img
-            src="assets/footer bar.svg"
-            alt="Decorative footer bar"
-            className="w-full h-auto footer-bar-animation"
+            className="h-[50vh] w-auto"
           />
         </div>
 
