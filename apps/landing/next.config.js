@@ -1,10 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['tailwindcss'],
-  experimental: {
-    externalDir: true,
-    serverComponentsExternalPackages: ['tailwindcss']
-  }
+  transpilePackages: ['tailwindcss']
 }
 
 module.exports = nextConfig 
