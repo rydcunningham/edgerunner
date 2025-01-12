@@ -1,7 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "packageManager": "npm",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
