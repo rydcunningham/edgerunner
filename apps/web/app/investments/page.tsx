@@ -56,29 +56,31 @@ export default function Investments() {
   }
 
   return (
-    <div className="space-y-12">
-      <header className="space-y-2">
-        <h2 className="text-xl font-mono">/investments</h2>
-        <p className="text-muted-foreground">
+    <div className="min-h-screen flex flex-col">
+      {/* Fixed Header Content */}
+      <div className="fixed top-24 left-24 right-24 z-40">
+        <h2 className="text-white/90 text-2xl font-medium mb-4">Investments</h2>
+        <p className="text-white/80">
           early-stage investments in AI, infrastructure, and dev tools.{' '}
-          <a href="mailto:rc@edgerunner.io" className="text-primary hover:underline">
+          <a href="mailto:rc@edgerunner.io" className="text-white/80 hover:text-[#F75049] transition-colors">
             get in touch →
           </a>{' '}
         </p>
-      </header>
+      </div>
 
-      <div className="space-y-16">
+      {/* Scrollable Content */}
+      <div className="mt-56 px-24 space-y-16">
         {Object.entries(categories).map(([category, investments]) => (
           <section key={category} className="space-y-6">
-            <h3 className="text-lg font-mono text-foreground">{category}</h3>
+            <h3 className="text-lg font-mono text-white">{category}</h3>
             <div className="space-y-8">
               {investments.map((investment) => (
                 <article key={investment.name} className="space-y-4">
-                  <h4 className="text-primary font-mono">{investment.name}</h4>
-                  <div className="grid grid-cols-[1fr,auto,auto] gap-8">
-                    <p className="text-muted-foreground">{investment.description}</p>
-                    <div className="text-muted-foreground font-mono whitespace-nowrap">{investment.round}</div>
-                    <div className="text-muted-foreground font-mono">{investment.year}</div>
+                  <h4 className="text-white font-mono">{investment.name}</h4>
+                  <div className="max-w-3xl grid grid-cols-[1fr,auto,auto] gap-4">
+                    <p className="text-white/80">{investment.description}</p>
+                    <div className="text-white/60">{investment.round}</div>
+                    <div className="text-white/60">{investment.year}</div>
                   </div>
                   {investment.links.length > 0 && (
                     <div className="flex gap-3 text-sm">
@@ -86,7 +88,7 @@ export default function Investments() {
                         <a 
                           key={link.url}
                           href={link.url} 
-                          className="text-muted-foreground hover:text-primary"
+                          className="text-white/60 hover:text-[#F75049]"
                         >
                           {link.label} →
                         </a>

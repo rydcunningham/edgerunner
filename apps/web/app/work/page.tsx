@@ -141,56 +141,58 @@ export default function Work() {
   const sortedYears = Object.keys(groupedProjects).sort((a, b) => parseInt(b) - parseInt(a));
 
   return (
-    <div className="space-y-12">
-      <header className="space-y-2">
-        <h2 className="text-xl font-mono">/work</h2>
-        <p className="text-muted-foreground">
+    <div className="min-h-screen flex flex-col">
+      {/* Fixed Header Content */}
+      <div className="fixed top-24 left-24 right-24 z-40">
+        <h2 className="text-white/90 text-2xl font-medium mb-4">Work</h2>
+        <p className="text-white/80">
           open source projects and contributions.{' '}
-          <a href="https://github.com/rydcunningham" className="text-primary hover:underline">
+          <a href="https://github.com/rydcunningham" className="text-white/80 hover:text-[#F75049] transition-colors">
             view on GitHub →
           </a>{' '}
         </p>
-      </header>
+      </div>
 
-      <div className="space-y-24">
+      {/* Scrollable Content */}
+      <div className="mt-56 px-24 space-y-24">
         {sortedYears.map((year) => {
           const yearProjects = groupedProjects[year] || [];
           return (
             <section key={year} className="space-y-12">
-              <h3 className="text-3xl font-mono tracking-tight">{year}</h3>
-              <div className="space-y-16">
+              <h3 className="text-3xl font-mono tracking-tight text-white">{year}</h3>
+              <div className="grid grid-cols-2 gap-12">
                 {yearProjects.map((project) => (
-                  <article key={project.name} className="grid grid-cols-[1fr,320px] gap-8 items-start">
-                    <div className="space-y-4">
-                      <header className="space-y-3">
-                        <div className="flex items-baseline gap-3">
-                          <h3 className="text-2xl font-mono tracking-tight">{project.name}</h3>
-                          <span className="text-sm text-muted-foreground font-mono">{project.category}</span>
-                        </div>
-                        <p className="text-base text-muted-foreground font-light leading-relaxed">
-                          {project.description}
-                        </p>
-                      </header>
-                      <div className="flex gap-3 text-sm">
-                        {project.links.map((link) => (
-                          <a 
-                            key={`${project.name}-${link.label}`}
-                            href={link.url} 
-                            className="text-muted-foreground hover:text-primary"
-                          >
-                            {link.label} →
-                          </a>
-                        ))}
+                  <article key={project.name} className="space-y-4">
+                    <div className="max-w-[400px]">
+                      <div className="aspect-[16/10] rounded-xl overflow-hidden bg-background/[var(--glass-opacity)] border border-border">
+                        {project.image && (
+                          <img 
+                            src={project.image} 
+                            alt={project.name}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
                       </div>
                     </div>
-                    <div className="aspect-[16/10] rounded-xl overflow-hidden bg-background/[var(--glass-opacity)] border border-border">
-                      {project.image && (
-                        <img 
-                          src={project.image} 
-                          alt={project.name}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
+                    <header className="space-y-3">
+                      <div className="flex items-baseline gap-3">
+                        <h3 className="text-xl font-mono tracking-tight text-white">{project.name}</h3>
+                        <span className="text-sm text-white/60 font-mono">{project.category}</span>
+                      </div>
+                      <p className="text-base text-white/80 font-light leading-relaxed">
+                        {project.description}
+                      </p>
+                    </header>
+                    <div className="flex gap-3 text-sm">
+                      {project.links.map((link) => (
+                        <a 
+                          key={`${project.name}-${link.label}`}
+                          href={link.url} 
+                          className="text-white/60 hover:text-[#F75049]"
+                        >
+                          {link.label} →
+                        </a>
+                      ))}
                     </div>
                   </article>
                 ))}

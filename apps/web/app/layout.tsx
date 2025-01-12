@@ -1,52 +1,81 @@
+import React from 'react'
+import { Rajdhani } from 'next/font/google'
+import Link from 'next/link'
 import './globals.css'
-import { NavLink } from '../components/nav-link'
-import { ThemeToggle } from '../components/theme-toggle'
+
+const rajdhani = Rajdhani({
+  weight: ['300', '400', '500', '600', '700'],
+  subsets: ['latin'],
+  display: 'swap',
+})
+
+export const metadata = {
+  title: 'edgerunner.io',
+  description: 'Coming soon',
+}
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // Format current date as YYYY.MM.DD
+  const formattedDate = new Date().toISOString().split('T')[0].replace(/-/g, '.')
+
   return (
-    <html lang="en">
-      <body 
-        className="min-h-screen bg-fixed"
-        style={{
-          backgroundImage: "url('/black_sands.avif')",
-          backgroundSize: 'cover',
-          backgroundColor: 'hsl(var(--background))'
-        }}
-      >
-        <div className="fixed inset-8">
-          <div className="relative h-full rounded-xl backdrop-blur-xl bg-background/[var(--glass-opacity)] border border-border">
-            <div className="h-full max-w-7xl mx-auto px-8 py-16 grid grid-cols-[220px,1fr] gap-14">
-              <header>
-                <div className="border-r-[2px] border-border pr-14">
-                  <nav className="space-y-1 font-mono">
-                    <NavLink href="/">home</NavLink>
-                    <NavLink href="/work">work</NavLink>
-                    <NavLink href="/investments">investments</NavLink>
-                    <NavLink href="/blog">machine yearning</NavLink>
-                  </nav>
-                </div>
-                <div className="mt-8 space-y-1">
-                  <a href="https://github.com/rydcunningham" className="block text-muted-foreground hover:text-primary">github</a>
-                  <a href="https://twitter.com/rydcunningham" className="block text-muted-foreground hover:text-primary">twitter</a>
-                  <a href="https://linkedin.com/in/rydcunningham" className="block text-muted-foreground hover:text-primary">linkedin</a>
-                </div>
-                <div className="mt-8 space-y-1 text-muted-foreground text-sm">
-                  <p>© mmxxiv rydcunningham</p>
-                </div>
-              </header>
-              <main className="text-foreground overflow-y-auto">
-                {children}
-              </main>
-            </div>
-            <div className="absolute bottom-4 left-4">
-              <ThemeToggle />
-            </div>
-          </div>
+    <html lang="en" className={rajdhani.className}>
+      <body className="min-h-screen relative bg-black">
+        {/* Navigation */}
+        <nav className="fixed top-0 left-0 right-0 z-[100] bg-black/30 py-8">
+          <ul className="flex space-x-8 px-24">
+            <li>
+              <Link href="/" className="text-white/30 hover:text-[#F75049] text-sm uppercase tracking-wider">
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link href="/bio" className="text-white/30 hover:text-[#F75049] text-sm uppercase tracking-wider">
+                Bio
+              </Link>
+            </li>
+            <li>
+              <Link href="/work" className="text-white/30 hover:text-[#F75049] text-sm uppercase tracking-wider">
+                Work
+              </Link>
+            </li>
+            <li>
+              <Link href="/investments" className="text-white/30 hover:text-[#F75049] text-sm uppercase tracking-wider">
+                Investments
+              </Link>
+            </li>
+            <li>
+              <Link href="/blog" className="text-white/30 hover:text-[#F75049] text-sm uppercase tracking-wider">
+                Machine Yearning
+              </Link>
+            </li>
+          </ul>
+        </nav>
+
+        {/* Date text */}
+        <div className="fixed left-6 top-24 origin-top-left -rotate-90 z-40 pointer-events-none">
+          <p className="text-white/30 text-sm tracking-wider">{formattedDate}</p>
         </div>
+
+        {/* Left bar with slashes */}
+        <div className="fixed left-6 top-1/2 -translate-y-1/2 z-30 pointer-events-none">
+          <img
+            src="assets/left bar.svg"
+            alt="Decorative left bar"
+            className="h-[50vh] w-auto"
+          />
+        </div>
+
+        {/* Bottom text */}
+        <div className="fixed bottom-4 left-9 z-40 pointer-events-none">
+          <p className="text-white/30 text-xs">EDGERUNNER VENTURES © 2025</p>
+        </div>
+
+        {children}
       </body>
     </html>
   )
