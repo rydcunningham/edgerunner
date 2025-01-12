@@ -1,11 +1,42 @@
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { getPostData } from 'app/lib/blog'
+import fs from 'fs'
+import path from 'path'
+import matter from 'gray-matter'
+import MarkdownIt from 'markdown-it'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
 import type { Components } from 'react-markdown'
+
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true
+})
+
+function getPostData(slug: string) {
+  const postsDirectory = path.join(process.cwd(), 'posts')
+  if (!fs.existsSync(postsDirectory)) {
+    return null
+  }
+  const fullPath = path.join(postsDirectory, `${slug}.md`)
+  if (!fs.existsSync(fullPath)) {
+    return null
+  }
+  const fileContents = fs.readFileSync(fullPath, 'utf8')
+  const matterResult = matter(fileContents)
+  const contentHtml = md.render(matterResult.content)
+
+  return {
+    slug,
+    contentHtml,
+    title: matterResult.data.title,
+    date: matterResult.data.date,
+    excerpt: matterResult.data.excerpt
+  }
+}
 
 export default function BlogPost({ params }: { params: { slug: string } }) {
   const post = getPostData(params.slug)
