@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import { getAllPosts } from '../lib/blog.js'
+import { getAllPosts } from 'app/lib/blog.js'
 
 export default function Blog() {
   const posts = getAllPosts()
