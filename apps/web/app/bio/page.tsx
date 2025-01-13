@@ -1,3 +1,5 @@
+import Image from 'next/image'
+
 export default function Bio() {
   return (
     <div className="min-h-screen flex flex-col">
@@ -31,12 +33,32 @@ export default function Bio() {
         </div>
 
         {/* Image */}
-        <div className="w-[360px]">
-          <div className="aspect-[9/16] rounded-xl overflow-hidden bg-background/[var(--glass-opacity)] border border-border">
-            <img 
-              src="/headshot.jpg" 
-              alt="Ryan Cunningham"
-              className="w-full h-full object-cover"
+        <div className="w-[360px] relative">
+          <Image
+            src="/assets/9_16_grabber.svg"
+            alt=""
+            width={20}
+            height={640}
+            className="absolute -left-3.5 top-0 h-[639px] w-auto"
+          />
+          <div className="relative">
+            <div className="aspect-[9/16] overflow-hidden" style={{
+              clipPath: 'polygon(0% 0%, 97% 0%, 100% 3%, 100% 97%, 97% 100%, 0% 100%)'
+            }}>
+              <Image 
+                src="/img/headshot.png" 
+                alt="Ryan Cunningham"
+                width={360}
+                height={640}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <Image
+              src="/assets/9_16_frame.svg"
+              alt=""
+              width={360}
+              height={640}
+              className="absolute inset-0 z-10"
             />
           </div>
         </div>

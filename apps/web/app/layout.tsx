@@ -33,7 +33,7 @@ export default function RootLayout({
         </div>
 
         {/* Vertical bar */}
-        <div className="fixed top-0 bottom-[35.5px] w-[1px] z-[100] bg-[#F75049]/30" style={{ left: '42px' }} />
+        <div className="fixed top-0 bottom-0 w-[1px] z-[100] bg-[#F75049]/30" style={{ left: '42px' }} />
         
         <Navigation />
         <DynamicTimestamp />
@@ -50,21 +50,9 @@ export default function RootLayout({
           />
         </div>
 
-        {/* Footer */}
-        <footer className="fixed bottom-0 right-0 z-40" style={{ left: '42px' }}>
-          <div className="relative">
-            <Image
-              src="/assets/footer asset.svg"
-              alt="Footer background"
-              width={1920}
-              height={60}
-              className="w-full h-auto"
-            />
-            <div className="absolute inset-0 flex items-center">
-              <p className="text-white/30 text-xs">EDGERUNNER VENTURES © 2025 \\</p>
-            </div>
-          </div>
-        </footer>
+        <div className="fixed left-7 bottom-3 origin-bottom-left -rotate-90 z-[100] pointer-events-none">
+          <p className="text-[#F75049]/50 text-xs">EDGERUNNER VENTURES © 2025</p>
+        </div>
 
         {children}
       </body>

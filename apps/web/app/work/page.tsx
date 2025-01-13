@@ -1,9 +1,11 @@
+import Image from 'next/image'
+
 interface Project {
   name: string;
   description: string;
-  image?: string;
+  image: string;
   category: string;
-  year: string;
+  year: number;
   links: Array<{
     label: string;
     url: string;
@@ -15,9 +17,9 @@ export default function Work() {
     {
       name: "CORTEX",
       description: "A local scraping tool for extracting, categorizing, and storing content from websites into a structured database.",
-      image: "/projects/ai-code-assistant.png",
+      image: "/img/black_sands.avif",
       category: "[side project]",
-      year: "2024",
+      year: 2024,
       links: [
         { label: "Demo", url: "#" },
         { label: "GitHub", url: "#" }
@@ -26,9 +28,9 @@ export default function Work() {
     {
       name: "CITYSIM",
       description: "Delivery network simulator that tells you where things will break before they do. Optimize costs and throughput by testing assumptions in silico.",
-      image: "/projects/ai-code-assistant.png",
+      image: "/img/black_sands.avif",
       category: "[side project]",
-      year: "2024",
+      year: 2024,
       links: [
         { label: "Demo", url: "#" },
         { label: "GitHub", url: "#" }
@@ -37,9 +39,9 @@ export default function Work() {
     {
       name: "MIKOSHI HOMELAB",
       description: "Franken-lab for self-hosted AI, cloud, and media projects. Built w/ unRAID on Supermicro, Synology, NVIDIA, RPi.",
-      image: "/projects/mikoshi-homelab.png",
+      image: "/img/black_sands.avif",
       category: "[side project]",
-      year: "2024",
+      year: 2024,
       links: [
         { label: "Live Site", url: "#" },
         { label: "GitHub", url: "#" }
@@ -48,9 +50,9 @@ export default function Work() {
     {
       name: "SHACK15 VENTURES",
       description: "The official angel fund of the SHACK15 community, investing in early-stage AI & deep tech startups.",
-      image: "/projects/mikoshi-homelab.png",
+      image: "/img/black_sands.avif",
       category: "[professional]",
-      year: "2024",
+      year: 2024,
       links: [
         { label: "Live Site", url: "#" },
         { label: "GitHub", url: "#" }
@@ -59,9 +61,9 @@ export default function Work() {
     {
       name: "VALIDMIND",
       description: "Model validation, testing, and documentation for ML in financial services.",
-      image: "/projects/blog-engine.png",
+      image: "/img/black_sands.avif",
       category: "[professional]",
-      year: "2021",
+      year: 2021,
       links: [
         { label: "Site", url: "https://validmind.ai" }
       ]
@@ -69,9 +71,9 @@ export default function Work() {
     {
       name: "SKYFIRE AI",
       description: "Swarm intelligence for heterogeneous drone fleets.",
-      image: "/projects/blog-engine.png",
+      image: "/img/black_sands.avif",
       category: "[professional]",
-      year: "2023",
+      year: 2023,
       links: [
         { label: "Site", url: "https://skyfireai.com" }
       ]
@@ -79,9 +81,9 @@ export default function Work() {
     {
       name: "RAPIDFIRE",
       description: "Parallelized model training and experimentation for Data Science teams.",
-      image: "/projects/blog-engine.png",
+      image: "/img/black_sands.avif",
       category: "[professional]",
-      year: "2023",
+      year: 2023,
       links: [
         { label: "Site", url: "https://rapidfire.ai" }
       ]
@@ -89,9 +91,9 @@ export default function Work() {
     {
       name: "SPEECHLAB",
       description: "Professional voice cloning and synthesis.",
-      image: "/projects/blog-engine.png",
+      image: "/img/black_sands.avif",
       category: "[professional]",
-      year: "2022",
+      year: 2022,
       links: [
         { label: "Site", url: "https://speechlab.ai" }
       ]
@@ -99,9 +101,9 @@ export default function Work() {
     {
       name: "WORKHELIX",
       description: "Assessing GenAI labor transformation potential for F500 companies using advanced labor, task, and automatability models.",
-      image: "/projects/blog-engine.png",
+      image: "/img/black_sands.avif",
       category: "[professional]",
-      year: "2023",
+      year: 2023,
       links: [
         { label: "Site", url: "https://workhelix.ai" }
       ]
@@ -109,9 +111,9 @@ export default function Work() {
     {
       name: "HOW TO BUILD AN AUTONOMOUS DELIVERY NETWORK",
       description: "First-principles buildup for autonomous delivery networks using sidewalk robots, droids, and drones. Focuses on 3 dimensions: throughput, costs, and scale blocks. Mentioned: Starship, Nuro, Prime Air.",
-      image: "/projects/blog-engine.png",
+      image: "/img/black_sands.avif",
       category: "[side project]",
-      year: "2018",
+      year: 2018,
       links: [
         { label: "LinkedIn", url: "https://www.linkedin.com/posts/rydcunningham_how-to-build-an-autonomous-delivery-network-activity-6666015742854598657--Jth/" }
       ]
@@ -119,9 +121,9 @@ export default function Work() {
     {
       name: "PATENT: TIME-VARYING LOUDNESS PREDICTION VIA TRAINED MODEL",
       description: "Novel machine-learning method for predicting noise and generating mapping data for urban aviation operating environments, including acoustic impacts from skyports and dynamic skylanes.",
-      image: "/projects/blog-engine.png",
+      image: "/img/black_sands.avif",
       category: "[professional]",
-      year: "2019",
+      year: 2019,
       links: [
         { label: "Google Patents", url: "https://patents.google.com/patent/US11900818B2/en" }
       ]
@@ -163,16 +165,30 @@ export default function Work() {
               <div className="grid grid-cols-2 gap-12">
                 {yearProjects.map((project) => (
                   <article key={project.name} className="space-y-4">
-                    <div className="max-w-[400px]">
-                      <div className="aspect-[16/10] rounded-xl overflow-hidden bg-background/[var(--glass-opacity)] border border-border">
-                        {project.image && (
-                          <img 
-                            src={project.image} 
-                            alt={project.name}
-                            className="w-full h-full object-cover"
-                          />
-                        )}
+                    <div className="max-w-[400px] relative">
+                      <Image 
+                        src="/assets/grabber.svg"
+                        alt="Grabber"
+                        width={20}
+                        height={250}
+                        className="absolute -left-4 top-0 h-full w-auto"
+                      />
+                      <div className="absolute inset-0 overflow-hidden" style={{ clipPath: 'polygon(0% 0%, 97% 0%, 100% 3%, 100% 97%, 97% 100%, 0% 100%)' }}>
+                        <Image 
+                          src={project.image}
+                          alt={project.name}
+                          width={400}
+                          height={250}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
+                      <Image 
+                        src="/assets/4_2.5_frame.svg"
+                        alt="Frame"
+                        width={400}
+                        height={250}
+                        className="w-full h-auto relative z-10"
+                      />
                     </div>
                     <header className="space-y-3">
                       <div className="flex items-baseline gap-3">

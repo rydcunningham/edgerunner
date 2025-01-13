@@ -28,12 +28,12 @@ export default function ReadingProgress() {
   if (!isBlogPost) return null
 
   return (
-    <div className="fixed top-8 right-24 flex items-center gap-3">
+    <div className="fixed top-8 right-24 flex items-center gap-3 z-[100]">
       <span className="text-[#F75049] text-sm uppercase tracking-wider">Reading Progress</span>
       <div className="w-[100px] h-[10px] bg-white/10">
         <div 
-          className="h-full bg-[#F75049] transition-all duration-100"
-          style={{ transform: `scaleX(${progress / 100})`, transformOrigin: 'left' }}
+          className="h-full bg-[#5EF6FF] transition-all duration-100"
+          style={{ transform: `scaleX(${progress / 100+0.01})`, transformOrigin: 'left' }}
         />
       </div>
     </div>
