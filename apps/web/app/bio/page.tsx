@@ -12,6 +12,16 @@ export default function Bio() {
             get in touch →
           </a>{' '}
         </p>
+        <div className="mt-2">
+          <a
+            href="/cv.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm uppercase tracking-wider text-white/60 hover:text-[#F75049] transition-colors"
+          >
+            [CV]
+          </a>
+        </div>
       </div>
 
       {/* Main Content */}

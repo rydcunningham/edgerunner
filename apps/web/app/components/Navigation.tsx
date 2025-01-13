@@ -57,10 +57,10 @@ export default function Navigation() {
         </li>
         <li>
           <Link 
-            href="/investments" 
-            className={`text-sm uppercase tracking-wider ${pathname === '/investments' ? 'text-[#5EF6FF] border-b border-[#5EF6FF] pb-1' : 'text-white/30 hover:text-[#F75049]'}`}
+            href="/portfolio" 
+            className={`text-sm uppercase tracking-wider ${pathname === '/portfolio' ? 'text-[#5EF6FF] border-b border-[#5EF6FF] pb-1' : 'text-white/30 hover:text-[#F75049]'}`}
           >
-            Investments
+            Portfolio
           </Link>
         </li>
         <li>
@@ -122,10 +122,10 @@ export default function Navigation() {
           </li>
           <li className="text-left">
             <Link 
-              href="/investments" 
-              className={`text-lg uppercase tracking-wider ${pathname === '/investments' ? 'text-[#5EF6FF] border-b border-[#5EF6FF] pb-1' : 'text-white/30 hover:text-[#F75049]'}`}
+              href="/portfolio" 
+              className={`text-lg uppercase tracking-wider ${pathname === '/portfolio' ? 'text-[#5EF6FF] border-b border-[#5EF6FF] pb-1' : 'text-white/30 hover:text-[#F75049]'}`}
             >
-              Investments
+              Portfolio
             </Link>
           </li>
           <li className="text-left">

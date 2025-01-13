@@ -171,7 +171,7 @@ export default function Work() {
                         alt="Grabber"
                         width={20}
                         height={250}
-                        className="absolute -left-4 top-0 h-full w-auto"
+                        className="absolute -left-2.5 top-0 h-full w-auto"
                       />
                       <div className="absolute inset-0 overflow-hidden" style={{ clipPath: 'polygon(0% 0%, 97% 0%, 100% 3%, 100% 97%, 97% 100%, 0% 100%)' }}>
                         <Image 
