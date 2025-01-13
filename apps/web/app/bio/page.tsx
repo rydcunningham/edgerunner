@@ -30,6 +30,44 @@ export default function Bio() {
           <p className="text-white/80 leading-relaxed">
             Outside of work, he's an avid pilot, endurance athlete, and homelab enthusiast. Currently building a self-hosted AI infrastructure stack on consumer hardware.
           </p>
+
+          {/* Social Links */}
+          <div className="pt-6">
+            <div className="flex items-center space-x-6">
+              <a 
+                href="https://twitter.com/rydcunningham" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-white/50 hover:text-[#F75049] transition-colors uppercase text-sm tracking-wider"
+              >
+                [x]
+              </a>
+              <a 
+                href="https://github.com/rydcunningham" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-white/50 hover:text-[#F75049] transition-colors uppercase text-sm tracking-wider"
+              >
+                [github]
+              </a>
+              <a 
+                href="https://linkedin.com/in/rydcunningham" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-white/50 hover:text-[#F75049] transition-colors uppercase text-sm tracking-wider"
+              >
+                [linkedin]
+              </a>
+              <a 
+                href="https://machineyearning.io" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-white/50 hover:text-[#F75049] transition-colors uppercase text-sm tracking-wider"
+              >
+                [substack]
+              </a>
+            </div>
+          </div>
         </div>
 
         {/* Image */}
