@@ -1,6 +1,9 @@
 import React from 'react'
 import { Rajdhani } from 'next/font/google'
-import Link from 'next/link'
+import Navigation from './components/Navigation'
+import DynamicTimestamp from './components/DynamicTimestamp'
+import ReadingProgress from './components/ReadingProgress'
+import Image from 'next/image'
 import './globals.css'
 
 const rajdhani = Rajdhani({
@@ -19,61 +22,49 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Format current date as YYYY.MM.DD
-  const formattedDate = new Date().toISOString().split('T')[0].replace(/-/g, '.')
-
   return (
     <html lang="en" className={rajdhani.className}>
       <body className="min-h-screen relative bg-black">
-        {/* Navigation */}
-        <nav className="fixed top-0 left-0 right-0 z-[100] bg-black/30 py-8">
-          <ul className="flex space-x-8 px-24">
-            <li>
-              <Link href="/" className="text-white/30 hover:text-[#F75049] text-sm uppercase tracking-wider">
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link href="/bio" className="text-white/30 hover:text-[#F75049] text-sm uppercase tracking-wider">
-                Bio
-              </Link>
-            </li>
-            <li>
-              <Link href="/work" className="text-white/30 hover:text-[#F75049] text-sm uppercase tracking-wider">
-                Work
-              </Link>
-            </li>
-            <li>
-              <Link href="/investments" className="text-white/30 hover:text-[#F75049] text-sm uppercase tracking-wider">
-                Investments
-              </Link>
-            </li>
-            <li>
-              <Link href="/blog" className="text-white/30 hover:text-[#F75049] text-sm uppercase tracking-wider">
-                Machine Yearning
-              </Link>
-            </li>
-          </ul>
-        </nav>
-
-        {/* Date text */}
-        <div className="fixed left-6 top-24 origin-top-left -rotate-90 z-40 pointer-events-none">
-          <p className="text-white/30 text-sm tracking-wider">{formattedDate}</p>
+        {/* Loading Screen */}
+        <div className="loading-screen fixed inset-0 z-[200] flex items-center justify-center bg-black">
+          <div className="progress-container">
+            <div className="progress-bar" />
+          </div>
         </div>
 
+        {/* Vertical bar */}
+        <div className="fixed top-0 bottom-[35.5px] w-[1px] z-[100] bg-[#F75049]/30" style={{ left: '42px' }} />
+        
+        <Navigation />
+        <DynamicTimestamp />
+        <ReadingProgress />
+
         {/* Left bar with slashes */}
-        <div className="fixed left-6 top-1/2 -translate-y-1/2 z-30 pointer-events-none">
-          <img
-            src="assets/left bar.svg"
+        <div className="fixed left-2.5 top-1/2 -translate-y-1/2 z-[100] pointer-events-none">
+          <Image
+            src="/left_bar_arasaka.svg"
             alt="Decorative left bar"
+            width={20}
+            height={400}
             className="h-[50vh] w-auto"
           />
         </div>
 
-        {/* Bottom text */}
-        <div className="fixed bottom-4 left-9 z-40 pointer-events-none">
-          <p className="text-white/30 text-xs">EDGERUNNER VENTURES © 2025</p>
-        </div>
+        {/* Footer */}
+        <footer className="fixed bottom-0 right-0 z-40" style={{ left: '42px' }}>
+          <div className="relative">
+            <Image
+              src="/assets/footer asset.svg"
+              alt="Footer background"
+              width={1920}
+              height={60}
+              className="w-full h-auto"
+            />
+            <div className="absolute inset-0 flex items-center">
+              <p className="text-white/30 text-xs">EDGERUNNER VENTURES © 2025 \\</p>
+            </div>
+          </div>
+        </footer>
 
         {children}
       </body>
