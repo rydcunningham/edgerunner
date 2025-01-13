@@ -80,10 +80,10 @@ export default function Navigation() {
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Toggle menu"
       >
-        <div className="w-6 flex flex-col items-start space-y-1.5">
-          <span className={`block h-0.5 bg-white/50 transition-all duration-300 ${isOpen ? 'w-6 rotate-45 translate-y-2' : 'w-6'}`} />
-          <span className={`block h-0.5 bg-white/50 transition-all duration-300 ${isOpen ? 'opacity-0' : 'w-4'}`} />
-          <span className={`block h-0.5 bg-white/50 transition-all duration-300 ${isOpen ? 'w-6 -rotate-45 -translate-y-2' : 'w-5'}`} />
+        <div className="w-5 flex flex-col items-center justify-center space-y-1.5">
+          <span className={`block h-px w-5 bg-white/50 transition-all duration-300 ${isOpen ? 'rotate-45 translate-y-[7px]' : ''}`} />
+          <span className={`block h-px w-5 bg-white/50 transition-all duration-300 ${isOpen ? 'opacity-0' : ''}`} />
+          <span className={`block h-px w-5 bg-white/50 transition-all duration-300 ${isOpen ? '-rotate-45 -translate-y-[7px]' : ''}`} />
         </div>
       </button>
 

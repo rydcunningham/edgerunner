@@ -32,27 +32,31 @@ export default function RootLayout({
           </div>
         </div>
 
-        {/* Vertical bar */}
-        <div className="fixed top-0 bottom-0 w-[1px] z-[100] bg-[#F75049]/30" style={{ left: '42px' }} />
-        
+        {/* Left side decorative pane */}
+        <div className="fixed left-0 top-0 h-full w-[84px] bg-black z-[99]">
+          {/* Vertical bar */}
+          <div className="absolute top-0 bottom-0 w-[1px] bg-[#F75049]/30" style={{ left: '42px' }} />
+          
+          <DynamicTimestamp />
+          
+          {/* Left bar with slashes */}
+          <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+            <Image
+              src="/left_bar_arasaka.svg"
+              alt="Decorative left bar"
+              width={20}
+              height={400}
+              className="h-[50vh] w-auto"
+            />
+          </div>
+
+          <div className="absolute left-7 bottom-3 origin-bottom-left -rotate-90 pointer-events-none">
+            <p className="text-[#F75049]/50 text-xs whitespace-nowrap">EDGERUNNER VENTURES © 2025</p>
+          </div>
+        </div>
+
         <Navigation />
-        <DynamicTimestamp />
         <ReadingProgress />
-
-        {/* Left bar with slashes */}
-        <div className="fixed left-2.5 top-1/2 -translate-y-1/2 z-[100] pointer-events-none">
-          <Image
-            src="/left_bar_arasaka.svg"
-            alt="Decorative left bar"
-            width={20}
-            height={400}
-            className="h-[50vh] w-auto"
-          />
-        </div>
-
-        <div className="fixed left-7 bottom-3 origin-bottom-left -rotate-90 z-[100] pointer-events-none">
-          <p className="text-[#F75049]/50 text-xs">EDGERUNNER VENTURES © 2025</p>
-        </div>
 
         {children}
       </body>

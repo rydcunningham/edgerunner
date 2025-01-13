@@ -19,16 +19,16 @@ export default function Bio() {
         {/* Text Content */}
         <div className="space-y-6 max-w-3xl">
           <p className="text-white/80 leading-relaxed">
-            Ryan is a founder and investor focused on AI infrastructure, dev tools, and autonomous systems. He currently leads SHACK15 Ventures, investing in early-stage AI and deep tech startups.
+            Ryan is a founder and investor focused on AI infrastructure and autonomous systems. He leads <a href="https://edgerunner.io" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">Edgerunner Ventures</a>, investing in early-stage AI, robotics, and deep tech startups, and serves as a Venture Partner at <a href="https://shack15.ventures" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">SHACK15 Ventures</a>.
           </p>
           <p className="text-white/80 leading-relaxed">
-            Previously, he built and invested in 9 enterprise AI companies at AI Fund with Andrew Ng, from zero to revenue. Before that, he led product at Spiketrap (acquired by Reddit), launched Uber's micromobility division ($10B+ GMV), and executed $10bn+ in tech transactions at Credit Suisse.
+            Previously at <a href="https://aifund.ai" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">AI Fund</a> with Andrew Ng, he co-built and invested in 9 AI companies from zero to revenue. Notable launches include <a href="https://skyfireai.com" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">Skyfire</a>, <a href="https://workhelix.com" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">Workhelix</a>, and <a href="https://rapidfire.ai" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">Rapidfire</a>. At Uber, he led AI initiatives across micromobility, urban air mobility (patented ML system for eVTOL acoustics), and autonomous delivery networks. He also led product at Spiketrap (acquired by <a href="https://reddit.com" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">Reddit</a>), and executed technology M&A transactions at Credit Suisse.
           </p>
           <p className="text-white/80 leading-relaxed">
-            He holds a BS in Finance from Georgetown University, with minors in Computer Science and Economics. He also completed Stanford's AI Professional Program, focusing on advanced NLP and deep learning.
+            He holds a BS in Finance from Georgetown University, with a minor in Economics, and studied advanced NLP and deep learning systems through Stanford's AI Graduate Certificate program.
           </p>
           <p className="text-white/80 leading-relaxed">
-            Outside of work, he's an avid pilot, endurance athlete, and homelab enthusiast. Currently building a self-hosted AI infrastructure stack on consumer hardware.
+            Outside of work, he is an active endurance athlete, Krav Maga practitioner, and homelab enthusiast. He shares his technical and business insights at <a href="https://machineyearning.io" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">machineyearning.io</a>.
           </p>
 
           {/* Social Links */}
@@ -38,7 +38,7 @@ export default function Bio() {
                 href="https://twitter.com/rydcunningham" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-white/50 hover:text-[#F75049] transition-colors uppercase text-sm tracking-wider"
+                className="text-[#F75049]/90 hover:text-[#F75049] transition-colors uppercase text-sm tracking-wider"
               >
                 [x]
               </a>
@@ -46,7 +46,7 @@ export default function Bio() {
                 href="https://github.com/rydcunningham" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-white/50 hover:text-[#F75049] transition-colors uppercase text-sm tracking-wider"
+                className="text-[#F75049]/90 hover:text-[#F75049] transition-colors uppercase text-sm tracking-wider"
               >
                 [github]
               </a>
@@ -54,7 +54,7 @@ export default function Bio() {
                 href="https://linkedin.com/in/rydcunningham" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-white/50 hover:text-[#F75049] transition-colors uppercase text-sm tracking-wider"
+                className="text-[#F75049]/90 hover:text-[#F75049] transition-colors uppercase text-sm tracking-wider"
               >
                 [linkedin]
               </a>
@@ -62,7 +62,7 @@ export default function Bio() {
                 href="https://machineyearning.io" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-white/50 hover:text-[#F75049] transition-colors uppercase text-sm tracking-wider"
+                className="text-[#F75049]/90 hover:text-[#F75049] transition-colors uppercase text-sm tracking-wider"
               >
                 [substack]
               </a>
@@ -71,31 +71,31 @@ export default function Bio() {
         </div>
 
         {/* Image */}
-        <div className="w-[360px] relative">
+        <div className="w-[400px] relative">
           <Image
-            src="/assets/9_16_grabber.svg"
+            src="/assets/square_grabber.svg"
             alt=""
             width={20}
-            height={640}
-            className="absolute -left-3.5 top-0 h-[639px] w-auto"
+            height={400}
+            className="absolute -left-3.5 top-0 w-auto"
           />
           <div className="relative">
-            <div className="aspect-[9/16] overflow-hidden" style={{
+            <div className="aspect-[1/1] overflow-hidden" style={{
               clipPath: 'polygon(0% 0%, 97% 0%, 100% 3%, 100% 97%, 97% 100%, 0% 100%)'
             }}>
               <Image 
-                src="/img/headshot.png" 
+                src="/img/prof.jpeg" 
                 alt="Ryan Cunningham"
-                width={360}
-                height={640}
-                className="w-full h-full object-cover"
+                width={400}
+                height={400}
+                className="w-full h-full object-contain"
               />
             </div>
             <Image
-              src="/assets/9_16_frame.svg"
+              src="/assets/square_frame.svg"
               alt=""
-              width={360}
-              height={640}
+              width={400}
+              height={400}
               className="absolute inset-0 z-10"
             />
           </div>
