@@ -13,7 +13,7 @@ type Investment = {
   links: Array<{ label: string, url: string }>
 }
 
-export default function Investments() {
+export default function Portfolio() {
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
   const [activeCardIndex, setActiveCardIndex] = useState(0)
   const [selectedInvestment, setSelectedInvestment] = useState<Investment | null>(null)

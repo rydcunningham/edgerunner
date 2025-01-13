@@ -1,0 +1,56 @@
+# Edgerunner Ventures
+
+## Summary
+Edgerunner Ventures is an early-stage venture capital firm focused on AI infrastructure and autonomous systems investments. The firm is led by Ryan Cunningham, who brings experience from AI Fund, Uber, and various successful startup ventures.
+
+## Detailed Information
+
+### Investment Focus
+- AI Infrastructure
+- Robotics
+- Deep Tech
+- Autonomous Systems
+
+### Portfolio Companies
+1. AI Category:
+   - Positron (Seed, 2024) - Inference ASICs with OOM improvements over Hopper/Blackwell
+   - Fastino (Pre-seed, 2024) - 1000x faster LLM inference
+   - Cerebral Valley (Angel, 2023) - AI community and media platform
+
+2. Deep Tech Category:
+   - HYPR (Seed, 2024) - Robotaxis with RL and consumer hardware
+   - Besxar (Pre-seed, 2024) - Orbital manufacturing
+   - Glacier (Seed, 2023) - Recycling robots and waste management
+
+### Leadership
+Ryan Cunningham - Founder and Managing Partner
+- Previously: AI Fund (with Andrew Ng), Uber (AI initiatives), Spiketrap (acquired by Reddit)
+- Education: BS Finance (Georgetown), Stanford AI Graduate Certificate
+- Focus: AI infrastructure, autonomous systems, deep tech
+
+### Content
+- Blog: Machine Yearning (technical and business insights) - /blog
+- Portfolio: Investment showcase and details - /portfolio
+- Work: Projects and contributions - /work
+
+## File Structure
+```
+/
+├── bio/          # Leadership and background information
+├── work/         # Projects and professional work
+├── portfolio/    # Investment portfolio
+├── blog/         # Machine Yearning blog posts
+└── components/   # UI components
+```
+
+## Contact
+- Email: rc@edgerunner.io
+- Twitter: @rydcunningham
+- LinkedIn: /in/rydcunningham
+- GitHub: /rydcunningham
+- Blog: machineyearning.io
+
+## Additional Resources
+- Investment thesis and focus areas available on request
+- Technical deep dives on portfolio companies on the blog
+- Regular updates on AI infrastructure and autonomous systems trends 

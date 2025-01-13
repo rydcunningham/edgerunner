@@ -1,4 +1,7 @@
+'use client'
+
 import Image from 'next/image'
+import { useState, useEffect } from 'react'
 
 interface Project {
   name: string;
@@ -13,6 +16,7 @@ interface Project {
 }
 
 export default function Work() {
+  const [activeYear, setActiveYear] = useState<string>('')
   const projects: Project[] = [
     {
       name: "CORTEX",
@@ -142,6 +146,28 @@ export default function Work() {
   // Sort years in descending order
   const sortedYears = Object.keys(groupedProjects).sort((a, b) => parseInt(b) - parseInt(a));
 
+  // Handle scroll and update active year
+  useEffect(() => {
+    const handleScroll = () => {
+      const yearSections = Array.from(document.querySelectorAll('[data-year]'));
+      const scrollPosition = window.scrollY + window.innerHeight / 2;
+
+      for (const section of yearSections) {
+        const sectionTop = section.getBoundingClientRect().top + window.scrollY;
+        const sectionBottom = sectionTop + section.getBoundingClientRect().height;
+
+        if (scrollPosition >= sectionTop && scrollPosition <= sectionBottom) {
+          setActiveYear(section.getAttribute('data-year') || '');
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial check
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Fixed Header Content */}
@@ -155,14 +181,55 @@ export default function Work() {
         </p>
       </div>
 
+      {/* Timeline */}
+      <div className="fixed right-12 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center">
+        <div className="h-[50vh] relative">
+          {sortedYears.map((year, index) => (
+            <div
+              key={year}
+              className="absolute transform -translate-x-1/2"
+              style={{
+                top: `${(index / (sortedYears.length - 1)) * 100}%`,
+                left: '0'
+              }}
+            >
+              {/* Dashed line to next year (except for last year) */}
+              {index < sortedYears.length - 1 && (
+                <div 
+                  className="absolute w-px h-[100px] left-0"
+                  style={{
+                    background: `repeating-linear-gradient(
+                      to bottom,
+                      rgba(247, 80, 73, 0.2) 0px,
+                      rgba(247, 80, 73, 0.2) 4px,
+                      transparent 4px,
+                      transparent 8px
+                    )`,
+                    height: `${100 / (sortedYears.length - 1)}vh`
+                  }}
+                />
+              )}
+              
+              <div className="flex items-center">
+                <div className={`w-1 h-1 rounded-full ${activeYear === year ? 'bg-[#F75049]' : 'bg-[#F75049]/20'}`} />
+                <span className={`ml-3 text-sm font-mono ${
+                  activeYear === year ? 'text-[#F75049]' : 'text-white/20'
+                } transition-colors`}>
+                  {year}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Scrollable Content */}
       <div className="mt-56 px-24 space-y-24">
         {sortedYears.map((year) => {
           const yearProjects = groupedProjects[year] || [];
           return (
-            <section key={year} className="space-y-12">
-              <h3 className="text-3xl font-mono tracking-tight text-white">{year}</h3>
-              <div className="grid grid-cols-2 gap-12">
+            <section key={year} data-year={year} className="space-y-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 {yearProjects.map((project) => (
                   <article key={project.name} className="space-y-4">
                     <div className="max-w-[400px] relative">
