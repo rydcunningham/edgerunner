@@ -15,6 +15,9 @@ const rajdhani = Rajdhani({
 export const metadata = {
   title: 'edgerunner.io',
   description: 'Coming soon',
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({
