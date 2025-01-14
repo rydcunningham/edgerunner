@@ -38,20 +38,20 @@ export default function Portfolio() {
 
   const categories = {
     "AI": [
-      {
-        name: "Positron",
-        description: "Inference ASICs. OOM improvements over Hopper / Blackwell.",
-        round: "Seed",
-        year: "2024",
+      /*{
+        name: "STEALTH",
+        description: "Data center optimization.",
+        round: "Pre-seed",
+        domain: "infra",
+        year: "2025",
         links: [
-          { label: "Site", url: "https://positron.ai" },
-          { label: "Deep Dive", url: "https://cerebralvalley.ai/blog/positron-is-pushing-the-boundaries-of-ai-hardware-2THN3t9OrS6n50HC3YyWPu" }
         ]
-      },
+      },*/
       {
         name: "Fastino",
         description: "1000x faster LLM inference.",
         round: "Pre-seed",
+        domain: "new model architectures",
         year: "2024",
         links: [
           { label: "Site", url: "https://fastino.ai" },
@@ -59,9 +59,31 @@ export default function Portfolio() {
         ]
       },
       {
+        name: "Positron",
+        description: "Inference ASICs. OOM improvements over Hopper / Blackwell.",
+        round: "Seed",
+        domain: "infra",
+        year: "2024",
+        links: [
+          { label: "Site", url: "https://positron.ai" },
+          { label: "Deep Dive", url: "https://cerebralvalley.ai/blog/positron-is-pushing-the-boundaries-of-ai-hardware-2THN3t9OrS6n50HC3YyWPu" }
+        ]
+      },
+      {
+        name: "Alecto",
+        description: "Identity infrastructure for combatting image-based abuse.",
+        domain: "app layer",
+        round: "Angel",
+        year: "2024",
+        links: [
+          { label: "Site", url: "https://alectoai.com" }
+        ]
+      },
+      {
         name: "Cerebral Valley",
         description: "AI community and media platform.",
         round: "Angel",
+        domain: 'other',
         year: "2023",
         links: [
           { label: "Site", url: "https://cerebralvalley.ai" }
@@ -73,6 +95,7 @@ export default function Portfolio() {
         name: "HYPR",
         description: "Radically different robotaxis with RL and consumer hardware.",
         round: "Seed",
+        domain: "robotics",
         year: "2024",
         links: [
           { label: "Site", url: "https://hypr.ai" },
@@ -83,6 +106,7 @@ export default function Portfolio() {
         name: "Besxar",
         description: "Orbital manufacturing. Stealth",
         round: "Pre-seed",
+        domain: "hardware",
         year: "2024",
         links: [
           { label: "Site", url: "https://www.besxar.com/" }
@@ -92,6 +116,7 @@ export default function Portfolio() {
         name: "Glacier",
         description: "Ending waste with recycling robots.",
         round: "Seed",
+        domain: "robotics",
         year: "2023",
         links: [
           { label: "Site", url: "https://www.endwaste.io/" },
@@ -210,7 +235,7 @@ export default function Portfolio() {
                        }}>
                     <div className="absolute inset-0 border border-[#F75049]/20" />
                     <div className="p-8 space-y-6">
-                      <div className="text-[#F75049]/50 text-sm uppercase tracking-wider">{investment.category}</div>
+                      <div className="text-[#F75049]/50 text-sm uppercase tracking-wider">{investment.category}: {investment.domain}</div>
                       <h3 className="text-white text-2xl font-medium">{investment.name}</h3>
                       <p className="text-white/80">{investment.description}</p>
                       <div className="absolute bottom-8 left-8 right-8 space-y-4">
@@ -295,7 +320,7 @@ export default function Portfolio() {
               <div className="p-12 space-y-8 overflow-y-auto max-h-[80vh] relative z-20">
                 <div>
                   <div className="text-[#F75049]/50 text-sm uppercase tracking-wider mb-2">
-                    {selectedInvestment.category}
+                    {selectedInvestment.category}: {selectedInvestment.domain}
                   </div>
                   <h3 className="text-white text-4xl font-medium mb-4">{selectedInvestment.name}</h3>
                   <p className="text-white/80 text-lg leading-relaxed">{selectedInvestment.description}</p>

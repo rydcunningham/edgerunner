@@ -109,11 +109,11 @@ export default function Work() {
       category: "[professional]",
       year: 2023,
       links: [
-        { label: "Site", url: "https://workhelix.ai" }
+        { label: "Site", url: "https://workhelix.com" }
       ]
     },
     {
-      name: "HOW TO BUILD AN AUTONOMOUS DELIVERY NETWORK",
+      name: "WHITEPAPER: HOW TO BUILD AN AUTONOMOUS DELIVERY NETWORK",
       description: "First-principles buildup for autonomous delivery networks using sidewalk robots, droids, and drones. Focuses on 3 dimensions: throughput, costs, and scale blocks. Mentioned: Starship, Nuro, Prime Air.",
       image: "/img/black_sands.avif",
       category: "[side project]",
@@ -260,7 +260,6 @@ export default function Work() {
                     <header className="space-y-3">
                       <div className="flex items-baseline gap-3">
                         <h3 className="text-xl font-mono tracking-tight text-white">{project.name}</h3>
-                        <span className="text-sm text-white/60 font-mono">{project.category}</span>
                       </div>
                       <p className="text-base text-white/80 font-light leading-relaxed">
                         {project.description}

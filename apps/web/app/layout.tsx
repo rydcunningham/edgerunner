@@ -36,7 +36,7 @@ export default function RootLayout({
         </div>
 
         {/* Left side decorative pane */}
-        <div className="fixed left-0 top-0 h-full w-[84px] bg-black z-[99]">
+        <div className="fixed left-0 top-0 h-full bg-black w-[42px] z-[100]">
           {/* Vertical bar */}
           <div className="absolute top-0 bottom-0 w-[1px] bg-[#F75049]/30" style={{ left: '42px' }} />
           
