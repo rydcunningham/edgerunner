@@ -91,11 +91,11 @@ export default function Bio() {
               clipPath: 'polygon(0% 0%, 97% 0%, 100% 3%, 100% 97%, 97% 100%, 0% 100%)'
             }}>
               <Image 
-                src="/img/prof.jpeg" 
+                src="/img/abstract_gray.avif" 
                 alt="Ryan Cunningham"
                 width={400}
                 height={400}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
             </div>
             <Image
