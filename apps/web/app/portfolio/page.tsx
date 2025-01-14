@@ -10,6 +10,7 @@ type Investment = {
   round: string
   year: string
   category?: string
+  domain?: string
   links: Array<{ label: string, url: string }>
 }
 
@@ -72,8 +73,8 @@ export default function Portfolio() {
       {
         name: "Alecto",
         description: "Identity infrastructure for combatting image-based abuse.",
-        domain: "app layer",
         round: "Angel",
+        domain: "app layer",
         year: "2024",
         links: [
           { label: "Site", url: "https://alectoai.com" }
