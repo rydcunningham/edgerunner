@@ -114,9 +114,6 @@ export default function Portfolio() {
         <div className="space-y-4">
           <p className="text-white/80">
             early-stage investments in AI, infrastructure, and dev tools.{' '}
-            <a href="mailto:rc@edgerunner.io" className="text-white/80 hover:text-[#F75049] transition-colors">
-              get in touch →
-            </a>{' '}
           </p>
           <div className="flex gap-4">
             <button
