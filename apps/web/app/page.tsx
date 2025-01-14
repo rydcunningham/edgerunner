@@ -2,28 +2,37 @@ import React from 'react'
 
 export default function Page() {
   return (
-    <div className="min-h-screen relative flex flex-col">
-      {/* Gradient descent visualization */}
-      <div className="fixed right-48 top-1/2 -translate-y-1/2">
-        <img
-          src="assets/gradient_descent.svg"
-          alt="Gradient descent visualization"
-          className="w-[30vw] h-auto"
-        />
-      </div>
+    <div className="min-h-screen relative">
+      <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
+        {/* Main content */}
+        <div className="flex flex-col items-start justify-center px-12 pl-24 lg:pl-24 lg:pr-0">
+          <div className="space-y-4">
+            <div className="flex flex-col items-left lg:items-start">
+              <img
+                src="/glyph.png"
+                alt="Edgerunner Ventures Logo"
+                className="w-[80px] h-auto mb-4"
+              />
+              <h1 className="text-[#F75049] text-3xl tracking-wide">
+                EDGERUNNER_VENTURES
+              </h1>
+            </div>
+            <p className="text-white/50 text-base">
+              lock in.
+            </p>
+          </div>
+        </div>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-left justify-center px-24 pl-24">
-        <img
-          src="img/edgerunner_wordmark.png"
-          alt="edgerunner"
-          className="w-72 h-auto object-contain mb-8"
-        />
-        <div className="space-y-4 text-left">
-          <h2 className="text-white/90 text-2xl font-medium">EDGERUNNER VENTURES</h2>
-          <p className="text-white/50 text-base">
-            Full site launching soon
-          </p>
+        {/* Terminal text */}
+        <div className="flex items-center justify-start pl-0 lg:pl-12">
+          <div className="font-rajdhani uppercase tracking-widest bg-black/20 p-6 rounded-lg border border-white/10">
+            <div className="space-y-3">
+              <div><span className="text-white/50">{'>'}</span><span className="text-[#F75049]"> focus: [ai, infra, deeptech]</span></div>
+              <div><span className="text-white/50">{'>'}</span><span className="text-[#F75049]"> stage: [angel, pre-seed, seed]</span></div>
+              <div><span className="text-white/50">{'>'}</span><span className="text-[#F75049]"> location: [sf, atx]</span></div>
+              <div><span className="text-white/50">{'>'}</span><span className="text-[#F75049]"> _</span></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

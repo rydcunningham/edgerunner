@@ -29,7 +29,33 @@ export default function RootLayout({
     <html lang="en" className={rajdhani.className}>
       <body className="min-h-screen relative bg-black">
         {/* Loading Screen */}
-        <div className="loading-screen fixed inset-0 z-[200] flex items-center justify-center bg-black">
+        <div className="loading-screen fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black">
+          <div className="w-[200px] mb-8 relative">
+            {/* Gray version */}
+            <img
+              src="/glyph_gray_nobg.svg"
+              alt=""
+              className="w-full h-auto absolute inset-0"
+              style={{ 
+                animation: 'revealGlyph 500ms ease-in-out forwards'
+              }}
+            />
+            {/* Red version with reveal animation */}
+            <img
+              src="/glyph_nobg.svg"
+              alt="Edgerunner glyph"
+              className="w-full h-auto relative"
+              style={{ 
+                clipPath: 'inset(0 100% 0 0)',
+                animation: 'revealGlyph 700ms ease-in-out forwards'
+              }}
+            />
+          </div>
+          <div className="w-[202px] mb-4 overflow-hidden">
+            <div className="text-[#F75049] text-sm uppercase tracking-wider font-mono whitespace-pre">
+              LOADING...
+            </div>
+          </div>
           <div className="progress-container">
             <div className="progress-bar" />
           </div>
