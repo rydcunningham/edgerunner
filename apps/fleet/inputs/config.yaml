@@ -1,5 +1,5 @@
 fleet:
-  fleet_size: 100
+  fleet_size: 10
   battery_capacity: 75
   average_miles_per_kwh: 4
   utilization: 1.8
@@ -34,13 +34,13 @@ costs:
 
 geospatial:
   depot:
-    lat: 37.764
-    lon: -122.443
+    lat: 41.081023
+    lon: -81.514202
   service_area:
     radius: 7  # miles from depot
     center:
-      lat: 37.764
-      lon: -122.443
+      lat: 41.081023
+      lon: -81.514202
   average_speed:
     city: 15  # mph in city traffic
     highway: 35  # mph on highways

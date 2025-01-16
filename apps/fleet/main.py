@@ -12,7 +12,7 @@ import time
 import json
 import numpy as np
 
-def prepare_kepler_data(vehicle_df, trip_df, depot_location):
+def prepare_kepler_data(vehicle_df, trip_df, depot_location, road_network):
     """Prepare data for Kepler.gl visualization."""
     # Base UNIX timestamp for simulation start
     BASE_TIMESTAMP = 1564184363
@@ -26,13 +26,22 @@ def prepare_kepler_data(vehicle_df, trip_df, depot_location):
         if start['lon'] == end['lon'] and start['lat'] == end['lat']:
             return None
             
-        # Create 10 interpolated points between start and end
-        num_points = 10
-        lons = np.linspace(start['lon'], end['lon'], num_points)
-        lats = np.linspace(start['lat'], end['lat'], num_points)
+        # Get path from road network
+        start_loc = Location(lat=start['lat'], lon=start['lon'])
+        end_loc = Location(lat=end['lat'], lon=end['lon'])
+        path, _ = road_network.get_shortest_path(start_loc, end_loc)
+        
+        if not path:
+            return None
+            
+        # Get coordinates for the path
+        coords = road_network.get_path_coordinates(path)
+        
+        # Create timestamps for each point
+        num_points = len(coords)
         times = np.linspace(
-            BASE_TIMESTAMP + start['timestamp'], 
-            BASE_TIMESTAMP + end['timestamp'], 
+            BASE_TIMESTAMP + start['timestamp'],
+            BASE_TIMESTAMP + end['timestamp'],
             num_points
         )
         
@@ -50,7 +59,7 @@ def prepare_kepler_data(vehicle_df, trip_df, depot_location):
                 "geometry": {
                     "type": "LineString",
                     "coordinates": [[float(lon), float(lat), 0, int(time)] 
-                                  for lon, lat, time in zip(lons, lats, times)]
+                                  for (lat, lon), time in zip(coords, times)]
                 }
             }]
         }
@@ -78,19 +87,22 @@ def prepare_kepler_data(vehicle_df, trip_df, depot_location):
     
     # 2. Trip paths with interpolated points
     def create_trip_path(trip):
-        # Create 10 interpolated points between origin and destination
-        num_points = 10
-        lons = np.linspace(trip['origin_lon'], trip['destination_lon'], num_points)
-        lats = np.linspace(trip['origin_lat'], trip['destination_lat'], num_points)
+        # Get path from road network
+        origin = Location(lat=trip['origin_lat'], lon=trip['origin_lon'])
+        destination = Location(lat=trip['destination_lat'], lon=trip['destination_lon'])
+        path, distance = road_network.get_shortest_path(origin, destination)
         
-        # Create evenly spaced timestamps for the trip duration
+        if not path:
+            return None
+            
+        # Get coordinates for the path
+        coords = road_network.get_path_coordinates(path)
+        
+        # Create timestamps for each point
+        num_points = len(coords)
         start_time = BASE_TIMESTAMP + int(trip['timestamp'])
         # Estimate end time based on distance and average speed
-        distance_km = float(haversine_distance(
-            Location(lat=trip['origin_lat'], lon=trip['origin_lon']),
-            Location(lat=trip['destination_lat'], lon=trip['destination_lon'])
-        ))
-        trip_duration_seconds = (distance_km / 30) * 3600  # Assume 30 km/h average speed
+        trip_duration_seconds = (distance / 15) * 3600  # Assume 15 mph average speed in city
         times = np.linspace(start_time, start_time + trip_duration_seconds, num_points)
         
         # Create GeoJSON feature with timestamps
@@ -107,7 +119,7 @@ def prepare_kepler_data(vehicle_df, trip_df, depot_location):
                 "geometry": {
                     "type": "LineString",
                     "coordinates": [[float(lon), float(lat), 0, int(time)] 
-                                  for lon, lat, time in zip(lons, lats, times)]
+                                  for (lat, lon), time in zip(coords, times)]
                 }
             }]
         }
@@ -115,6 +127,8 @@ def prepare_kepler_data(vehicle_df, trip_df, depot_location):
     # Create paths for completed trips
     completed_trips = trip_df[trip_df['status'] == 'assigned'].copy()
     completed_trips['_geojson'] = completed_trips.apply(create_trip_path, axis=1)
+    # Remove trips where no path was found
+    completed_trips = completed_trips[completed_trips['_geojson'].notna()]
     # Convert numeric columns to Python types
     for col in ['fare', 'distance_miles', 'pickup_time_minutes']:
         completed_trips[col] = completed_trips[col].astype(float)
@@ -311,7 +325,17 @@ def main():
             lat=config['geospatial']['depot']['lat'],
             lon=config['geospatial']['depot']['lon']
         )
-        kepler_dir = prepare_kepler_data(vehicle_df, trip_df, depot_location)
+        service_area_center = Location(
+            lat=config['geospatial']['service_area']['center']['lat'],
+            lon=config['geospatial']['service_area']['center']['lon']
+        )
+        service_area_radius = config['geospatial']['service_area']['radius']
+        
+        # Create road network for path visualization (will use cache if available)
+        from utils.network import RoadNetwork
+        road_network = RoadNetwork(service_area_center, service_area_radius)
+        
+        kepler_dir = prepare_kepler_data(vehicle_df, trip_df, depot_location, road_network)
         print(f"\nKepler.gl data saved to: {kepler_dir}")
         
         # Basic analysis

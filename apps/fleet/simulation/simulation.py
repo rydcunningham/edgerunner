@@ -1,6 +1,7 @@
 from simulation.fleet import Vehicle
 from simulation.chargers import ChargingDepot
 from utils.geo import Location, random_point_in_radius, is_point_in_service_area, find_nearest_vehicle, haversine_distance
+from utils.network import RoadNetwork
 import random
 import pandas as pd
 import json
@@ -55,7 +56,7 @@ def simulate(env, config):
                         )
                     json.dump(entry, f)
                     f.write('\n')
-            
+    
     def write_depot_log():
         nonlocal depot_log
         if depot_log:
@@ -89,6 +90,9 @@ def simulate(env, config):
     )
     service_area_radius = config['geospatial']['service_area']['radius']
     
+    # Initialize road network
+    road_network = RoadNetwork(service_area_center, service_area_radius)
+    
     # Initialize fleet and depot with logging
     fleet = [
         Vehicle(env, i, 
@@ -96,12 +100,13 @@ def simulate(env, config):
                config['fleet']['average_miles_per_kwh'],
                vehicle_state_log,
                depot_location,
-               config['fleet']['initial_spread_radius'])
+               config['fleet']['initial_spread_radius'],
+               road_network)
         for i in range(config['fleet']['fleet_size'])
     ]
     depot = ChargingDepot(env, config['charging_infrastructure']['chargers_per_depot'], 
                          250, depot_log, write_depot_log)
-
+    
     def generate_trip_request():
         """Generate a random trip request within the service area."""
         trip_counter = 0  # Initialize counter for trip IDs
@@ -110,8 +115,10 @@ def simulate(env, config):
             origin = random_point_in_radius(service_area_center, service_area_radius)
             destination = random_point_in_radius(service_area_center, service_area_radius)
             
-            # Calculate trip distance and fare
-            trip_distance = haversine_distance(origin, destination)
+            # Calculate trip distance using road network
+            _, trip_distance = road_network.get_shortest_path(origin, destination)
+            
+            # Calculate fare
             surge = get_surge_multiplier(env.now, config)
             trip_fare = calculate_trip_fare(trip_distance, env.now, config)
             
@@ -139,17 +146,46 @@ def simulate(env, config):
                     
                     if pickup_time_minutes <= 15:  # Only assign if pickup time is <= 15 minutes
                         vehicle = available_vehicles[vehicle_idx]
-                        # Update trip log with assignment
-                        trip_log[-1].update({
-                            'vehicle_id': vehicle.id,
-                            'pickup_distance': pickup_distance,
-                            'pickup_time_minutes': pickup_time_minutes,
-                            'status': 'assigned'
-                        })
-                        write_trip_log()
                         
-                        # Dispatch vehicle
-                        env.process(vehicle.start_trip(origin, destination))
+                        # Calculate total trip energy requirements
+                        # 1. Energy to get to pickup
+                        pickup_energy = pickup_distance / vehicle.efficiency
+                        
+                        # 2. Energy for trip to destination
+                        trip_energy = trip_distance / vehicle.efficiency
+                        
+                        # 3. Energy to return to depot from destination
+                        _, depot_return_distance = road_network.get_shortest_path(destination, vehicle.depot_location)
+                        depot_return_energy = depot_return_distance / vehicle.efficiency
+                        
+                        # Total energy required
+                        total_energy_required = pickup_energy + trip_energy + depot_return_energy
+                        
+                        # Check if vehicle has enough battery to complete trip and return to depot
+                        if vehicle.battery_level >= total_energy_required:
+                            # Update trip log with assignment
+                            trip_log[-1].update({
+                                'vehicle_id': vehicle.id,
+                                'pickup_distance': pickup_distance,
+                                'pickup_time_minutes': pickup_time_minutes,
+                                'status': 'assigned'
+                            })
+                            write_trip_log()
+                            
+                            # Dispatch vehicle
+                            env.process(vehicle.start_trip(origin, destination))
+                        else:
+                            # Log as unfulfilled due to insufficient battery
+                            trip_log[-1].update({
+                                'status': 'unfulfilled',
+                                'reason': 'insufficient_battery',
+                                'nearest_pickup_distance': pickup_distance,
+                                'nearest_pickup_time': pickup_time_minutes,
+                                'missed_revenue': trip_fare,
+                                'battery_level': vehicle.battery_level,
+                                'energy_required': total_energy_required
+                            })
+                            write_trip_log()
                     else:
                         # Log as unfulfilled due to excessive pickup time
                         trip_log[-1].update({
@@ -181,7 +217,15 @@ def simulate(env, config):
         """Control the behavior of a single vehicle."""
         while True:
             if vehicle.state == "idle":
-                if vehicle.battery_level < vehicle.battery_capacity * 0.2:
+                # Calculate distance to depot using road network
+                _, depot_distance = road_network.get_shortest_path(vehicle.current_location, vehicle.depot_location)
+                
+                # Calculate energy required to return to depot
+                depot_return_energy = depot_distance / vehicle.efficiency
+                
+                # Check if battery is below 20% OR if battery is insufficient for depot return
+                if (vehicle.battery_level < vehicle.battery_capacity * 0.2 or 
+                    vehicle.battery_level < depot_return_energy * 1.1):  # 10% buffer
                     # Set state and write log before traveling
                     vehicle.set_state("en_route_to_depot")
                     write_vehicle_log()

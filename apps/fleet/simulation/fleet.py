@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from utils.geo import Location, haversine_distance, random_point_in_radius, is_point_in_service_area
 
 class Vehicle:
-    def __init__(self, env, id, battery_capacity, efficiency, state_log, depot_location, initial_radius):
+    def __init__(self, env, id, battery_capacity, efficiency, state_log, depot_location, initial_radius, road_network):
         self.env = env
         self.id = id
         self.battery_capacity = battery_capacity  # kWh
@@ -15,6 +15,7 @@ class Vehicle:
         self.km_traveled = 0
         self.trips_completed = 0
         self.state_log = state_log
+        self.road_network = road_network
         
         # Initialize location randomly within initial radius of depot
         self.current_location = random_point_in_radius(depot_location, initial_radius)
@@ -52,8 +53,9 @@ class Vehicle:
         self.km_traveled += distance_miles * 1.60934  # Convert miles to km
 
     def drive_to_location(self, destination: Location, is_repositioning=False):
-        """Drive to a specific location."""
-        distance = haversine_distance(self.current_location, destination)
+        """Drive to a specific location using road network."""
+        # Get shortest path and distance from road network
+        path, distance = self.road_network.get_shortest_path(self.current_location, destination)
         
         # Calculate driving time based on distance and speed
         if is_repositioning:
@@ -64,10 +66,21 @@ class Vehicle:
         drive_time_minutes = (distance / speed) * 60
         total_time_seconds = drive_time_minutes * 60
         
-        # Update location and energy
-        self.update_location(destination, distance)
-        
-        yield self.env.timeout(total_time_seconds)
+        # Get interpolated points along the path
+        if path:
+            waypoints = self.road_network.interpolate_path(path)
+            # Move through each waypoint
+            for point in waypoints:
+                # Calculate segment distance
+                segment_distance = distance / len(waypoints)
+                # Update location and energy for this segment
+                self.update_location(point, segment_distance)
+                # Small delay for segment
+                yield self.env.timeout(total_time_seconds / len(waypoints))
+        else:
+            # Fallback to direct route if no path found
+            self.update_location(destination, distance)
+            yield self.env.timeout(total_time_seconds)
 
     def drive(self, distance_miles, is_repositioning=False, maintain_state=False):
         """
@@ -86,17 +99,17 @@ class Vehicle:
             self.set_state("idle")
 
     def go_to_depot(self):
-        """Travel to the charging depot."""
-        distance = haversine_distance(self.current_location, self.depot_location)
+        """Travel to the charging depot using road network."""
+        self.set_state("en_route_to_depot")
         yield self.env.process(self.drive_to_location(self.depot_location, is_repositioning=True))
 
     def go_to_rider(self, pickup_location: Location):
-        """Travel to pick up a rider."""
+        """Travel to pick up a rider using road network."""
         self.set_state("en_route_to_rider")
         yield self.env.process(self.drive_to_location(pickup_location, is_repositioning=True))
 
     def start_trip(self, origin: Location, destination: Location):
-        """Start a trip from origin to destination."""
+        """Start a trip from origin to destination using road network."""
         # First go to pick up the rider
         yield self.env.process(self.go_to_rider(origin))
         
