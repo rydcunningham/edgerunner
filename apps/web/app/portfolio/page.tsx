@@ -235,11 +235,27 @@ export default function Portfolio() {
                          clipPath: 'polygon(0% 0%, 97% 0%, 100% 3%, 100% 97%, 97% 100%, 0% 100%)'
                        }}>
                     <div className="absolute inset-0 border border-[#F75049]/20" />
-                    <div className="p-8 space-y-6">
-                      <div className="text-[#F75049]/50 text-sm uppercase tracking-wider">{investment.category}: {investment.domain}</div>
-                      <h3 className="text-white text-2xl font-medium">{investment.name}</h3>
-                      <p className="text-white/80">{investment.description}</p>
-                      <div className="absolute bottom-8 left-8 right-8 space-y-4">
+                    <div className="p-8 h-full flex flex-col">
+                      <div className="space-y-6">
+                        <div className="text-[#F75049]/50 text-sm uppercase tracking-wider">{investment.category}: {investment.domain}</div>
+                        <h3 className="text-white text-2xl font-medium">{investment.name}</h3>
+                        <p className="text-white/80">{investment.description}</p>
+                      </div>
+                      
+                      {/*Optional Glacier Icon*/}
+                      {/*investment.name === 'Glacier' && (
+                        <div className="flex-1 flex items-center justify-center">
+                          <Image
+                            src="/assets/glacier-icon.svg"
+                            alt="Glacier Icon"
+                            width={120}
+                            height={120}
+                            className="opacity-50"
+                          />
+                        </div>
+                      )*/}
+
+                      <div className="space-y-4">
                         <div className="flex justify-between text-white/60">
                           <span>{investment.round}</span>
                           <span>{investment.year}</span>

@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { Rajdhani } from 'next/font/google'
 import Navigation from './components/Navigation'
 import DynamicTimestamp from './components/DynamicTimestamp'
 import ReadingProgress from './components/ReadingProgress'
 import Image from 'next/image'
 import './globals.css'
+import SocialTray from './components/SocialTray'
 
 const rajdhani = Rajdhani({
   weight: ['300', '400', '500', '600', '700'],
@@ -88,6 +89,9 @@ export default function RootLayout({
         <ReadingProgress />
 
         {children}
+        <Suspense>
+          <SocialTray />
+        </Suspense>
       </body>
     </html>
   )
