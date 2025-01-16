@@ -1,13 +1,54 @@
 fleet:
-  fleet_size: 1000
+  fleet_size: 100
   battery_capacity: 75
   average_miles_per_kwh: 4
   utilization: 1.8
   trip_distance_range: [2, 10]
+  initial_spread_radius: 3  # miles from depot for initial vehicle distribution
+  vehicle_capex: 80000  # $ per vehicle
+  battery_replacement_cost: 15000  # $ per battery
+  useful_life_miles: 1000000  # miles
+  battery_life_miles: 300000  # miles
+
+pricing:
+  base_pickup_fee: 3.00  # $ per pickup
+  per_mile_rate: 0.80  # $ per mile
+  surge_periods:
+    morning_rush:
+      start_time: 25200  # 7 AM in seconds
+      end_time: 32400   # 9 AM in seconds
+      multiplier: 1.2
+    evening_rush:
+      start_time: 61200  # 5 PM in seconds
+      end_time: 72000   # 8 PM in seconds
+      multiplier: 1.2
+    default:
+      multiplier: 1.0
+
+costs:
+  energy:
+    price_per_kwh: 0.1625  # $ per kWh
+  maintenance:
+    vehicle_capex_per_mile: 0.08  # $80K / 1M miles
+    battery_capex_per_mile: 0.05  # $15K / 300K miles
+
+geospatial:
+  depot:
+    lat: 37.764
+    lon: -122.443
+  service_area:
+    radius: 7  # miles from depot
+    center:
+      lat: 37.764
+      lon: -122.443
+  average_speed:
+    city: 15  # mph in city traffic
+    highway: 35  # mph on highways
+    repositioning: 25  # mph during repositioning
 
 charging_infrastructure:
   charging_depots: 1
-  chargers_per_depot: 20
+  chargers_per_depot: 5
   charging_types:
     - type: "Level 3"
       power: 250

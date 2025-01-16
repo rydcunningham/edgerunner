@@ -16,18 +16,21 @@ def get_latest_log_files():
     # Use absolute paths for glob
     vehicle_files = glob.glob(os.path.join(output_dir, 'vehicle_states_*.jsonl'))
     depot_files = glob.glob(os.path.join(output_dir, 'depot_events_*.jsonl'))
+    trip_files = glob.glob(os.path.join(output_dir, 'trip_events_*.jsonl'))
     
-    if not vehicle_files or not depot_files:
+    if not vehicle_files or not depot_files or not trip_files:
         print(f"Searching in directory: {output_dir}")
         print(f"Found vehicle files: {vehicle_files}")
         print(f"Found depot files: {depot_files}")
+        print(f"Found trip files: {trip_files}")
         raise FileNotFoundError("Log files not found in outputs directory")
         
     # Get most recent files based on timestamp in filename
     latest_vehicle = max(vehicle_files, key=os.path.getctime)
     latest_depot = max(depot_files, key=os.path.getctime)
+    latest_trip = max(trip_files, key=os.path.getctime)
     
-    return latest_vehicle, latest_depot
+    return latest_vehicle, latest_depot, latest_trip
 
 def main():
     # Load config and run simulation
@@ -44,12 +47,13 @@ def main():
     
     # Get the most recent log files
     try:
-        vehicle_log_file, depot_log_file = get_latest_log_files()
-        print(f"\nReading log files:\n{vehicle_log_file}\n{depot_log_file}")
+        vehicle_log_file, depot_log_file, trip_log_file = get_latest_log_files()
+        print(f"\nReading log files:\n{vehicle_log_file}\n{depot_log_file}\n{trip_log_file}")
         
         # Read logs into DataFrames
         vehicle_df = pd.read_json(vehicle_log_file, lines=True)
         depot_df = pd.read_json(depot_log_file, lines=True)
+        trip_df = pd.read_json(trip_log_file, lines=True)
         
         # Add human-readable timestamps
         sim_start_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -59,13 +63,61 @@ def main():
         depot_df['datetime'] = depot_df['timestamp'].apply(
             lambda x: sim_start_time + timedelta(seconds=x)
         )
+        trip_df['datetime'] = trip_df['timestamp'].apply(
+            lambda x: sim_start_time + timedelta(seconds=x)
+        )
         
         # Save processed DataFrames as CSV
         vehicle_df.to_csv(vehicle_log_file.replace('.jsonl', '.csv'), index=False)
         depot_df.to_csv(depot_log_file.replace('.jsonl', '.csv'), index=False)
+        trip_df.to_csv(trip_log_file.replace('.jsonl', '.csv'), index=False)
         
         # Basic analysis
         print("\n=== Simulation Summary ===")
+        
+        # Calculate distance traveled by state first
+        vehicle_df = vehicle_df.sort_values(['vehicle_id', 'timestamp'])
+        vehicle_df['next_km'] = vehicle_df.groupby('vehicle_id')['km_traveled'].shift(-1).fillna(vehicle_df['km_traveled'])
+        vehicle_df['distance_in_state'] = vehicle_df['next_km'] - vehicle_df['km_traveled']
+        
+        # Calculate maintenance cost per state change
+        vehicle_df['maintenance_cost'] = vehicle_df['distance_in_state'] * (
+            config['costs']['maintenance']['vehicle_capex_per_mile'] + 
+            config['costs']['maintenance']['battery_capex_per_mile']
+        ) * 0.621371  # Convert km to miles for cost calculation
+        
+        # Now calculate financial metrics
+        print("\nFinancial Performance:")
+        total_revenue = trip_df[trip_df['status'] == 'assigned']['fare'].sum()
+        total_energy_cost = depot_df['energy_cost'].sum()
+        total_maintenance_cost = vehicle_df['maintenance_cost'].sum()
+        
+        # Calculate unfulfilled trip metrics
+        unfulfilled_trips = trip_df[trip_df['status'] == 'unfulfilled']
+        total_unfulfilled = len(unfulfilled_trips)
+        total_missed_revenue = unfulfilled_trips['missed_revenue'].sum()
+        unfulfilled_by_reason = unfulfilled_trips['reason'].value_counts()
+        
+        print(f"Total Revenue: ${total_revenue:,.2f}")
+        print(f"Missed Revenue: ${total_missed_revenue:,.2f}")
+        print(f"Operating Costs:")
+        print(f"  Energy: ${total_energy_cost:,.2f}")
+        print(f"  Maintenance: ${total_maintenance_cost:,.2f}")
+        total_costs = total_energy_cost + total_maintenance_cost
+        operating_income = total_revenue - total_costs
+        print(f"Total Operating Costs: ${total_costs:,.2f}")
+        print(f"Operating Income: ${operating_income:,.2f}")
+        print(f"Operating Margin: {(operating_income/total_revenue)*100:.1f}%")
+        
+        print("\nTrip Fulfillment:")
+        total_trips = len(trip_df)
+        print(f"Total Trips Requested: {total_trips}")
+        print(f"Trips Fulfilled: {len(trip_df[trip_df['status'] == 'assigned'])}")
+        print(f"Trips Unfulfilled: {total_unfulfilled}")
+        print(f"Fulfillment Rate: {(1 - total_unfulfilled/total_trips)*100:.1f}%")
+        print("\nUnfulfilled Trip Reasons:")
+        for reason, count in unfulfilled_by_reason.items():
+            print(f"  {reason}: {count} ({count/total_unfulfilled*100:.1f}%)")
         
         # Vehicle statistics
         print("\nVehicle Statistics:")
@@ -73,13 +125,6 @@ def main():
         print(f"Total vehicles: {len(final_states)}")
         print(f"Average distance per vehicle: {final_states['km_traveled'].mean():.1f} km")
         print(f"Average trips per vehicle: {final_states['trips_completed'].mean():.1f}")
-        
-        # Calculate distance traveled by state
-        print("\nDistance by State:")
-        # Calculate distance traveled between each state change
-        vehicle_df = vehicle_df.sort_values(['vehicle_id', 'timestamp'])
-        vehicle_df['next_km'] = vehicle_df.groupby('vehicle_id')['km_traveled'].shift(-1).fillna(vehicle_df['km_traveled'])
-        vehicle_df['distance_in_state'] = vehicle_df['next_km'] - vehicle_df['km_traveled']
         
         # Get all unique states from both old_state and new_state
         all_states = sorted(set(vehicle_df['old_state'].unique()) | set(vehicle_df['new_state'].unique()))
