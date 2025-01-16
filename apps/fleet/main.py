@@ -1,11 +1,245 @@
 import simpy
 from utils.io import load_config
 from simulation.simulation import simulate
+from utils.geo import Location, random_point_in_radius, is_point_in_service_area, find_nearest_vehicle, haversine_distance
 import pandas as pd
+import geopandas as gpd
+from shapely.geometry import LineString
 import os
 from datetime import datetime, timedelta
 import glob
 import time
+import json
+import numpy as np
+
+def prepare_kepler_data(vehicle_df, trip_df, depot_location):
+    """Prepare data for Kepler.gl visualization."""
+    # Base UNIX timestamp for simulation start
+    BASE_TIMESTAMP = 1564184363
+    
+    # 1. Vehicle paths over time
+    # First sort by vehicle and timestamp to get proper path sequence
+    vehicle_df = vehicle_df.sort_values(['vehicle_id', 'timestamp'])
+    
+    # Create GeoJSON paths for vehicles
+    def create_vehicle_path(start, end):
+        if start['lon'] == end['lon'] and start['lat'] == end['lat']:
+            return None
+            
+        # Create 10 interpolated points between start and end
+        num_points = 10
+        lons = np.linspace(start['lon'], end['lon'], num_points)
+        lats = np.linspace(start['lat'], end['lat'], num_points)
+        times = np.linspace(
+            BASE_TIMESTAMP + start['timestamp'], 
+            BASE_TIMESTAMP + end['timestamp'], 
+            num_points
+        )
+        
+        # Create GeoJSON feature with timestamps
+        return {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": {
+                    "vehicle_id": str(start['vehicle_id']),
+                    "old_state": str(start['old_state']),
+                    "new_state": str(start['new_state']),
+                    "battery_level_pct": float(start['battery_level_pct'])
+                },
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": [[float(lon), float(lat), 0, int(time)] 
+                                  for lon, lat, time in zip(lons, lats, times)]
+                }
+            }]
+        }
+    
+    # Create path GeoJSON for each vehicle movement
+    vehicle_paths = []
+    for vehicle_id, group in vehicle_df.groupby('vehicle_id'):
+        for i in range(len(group) - 1):
+            start = group.iloc[i]
+            end = group.iloc[i + 1]
+            path = create_vehicle_path(start, end)
+            if path:
+                vehicle_paths.append({
+                    'vehicle_id': str(vehicle_id),
+                    'old_state': str(start['old_state']),
+                    'new_state': str(start['new_state']),
+                    'battery_level_pct': float(start['battery_level_pct']),
+                    'distance': float(end['km_traveled'] - start['km_traveled']),
+                    'timestamp': int(BASE_TIMESTAMP + start['timestamp']),
+                    'datetime': str(start['datetime']),
+                    '_geojson': path
+                })
+    
+    vehicle_paths_df = pd.DataFrame(vehicle_paths)
+    
+    # 2. Trip paths with interpolated points
+    def create_trip_path(trip):
+        # Create 10 interpolated points between origin and destination
+        num_points = 10
+        lons = np.linspace(trip['origin_lon'], trip['destination_lon'], num_points)
+        lats = np.linspace(trip['origin_lat'], trip['destination_lat'], num_points)
+        
+        # Create evenly spaced timestamps for the trip duration
+        start_time = BASE_TIMESTAMP + int(trip['timestamp'])
+        # Estimate end time based on distance and average speed
+        distance_km = float(haversine_distance(
+            Location(lat=trip['origin_lat'], lon=trip['origin_lon']),
+            Location(lat=trip['destination_lat'], lon=trip['destination_lon'])
+        ))
+        trip_duration_seconds = (distance_km / 30) * 3600  # Assume 30 km/h average speed
+        times = np.linspace(start_time, start_time + trip_duration_seconds, num_points)
+        
+        # Create GeoJSON feature with timestamps
+        return {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": {
+                    "trip_id": str(trip['trip_id']),
+                    "vehicle_id": str(trip['vehicle_id']),
+                    "fare": float(trip['fare']),
+                    "distance_miles": float(trip['distance_miles'])
+                },
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": [[float(lon), float(lat), 0, int(time)] 
+                                  for lon, lat, time in zip(lons, lats, times)]
+                }
+            }]
+        }
+    
+    # Create paths for completed trips
+    completed_trips = trip_df[trip_df['status'] == 'assigned'].copy()
+    completed_trips['_geojson'] = completed_trips.apply(create_trip_path, axis=1)
+    # Convert numeric columns to Python types
+    for col in ['fare', 'distance_miles', 'pickup_time_minutes']:
+        completed_trips[col] = completed_trips[col].astype(float)
+    
+    trip_paths_df = completed_trips[['trip_id', 'vehicle_id', 'datetime', '_geojson', 'fare', 
+                                   'distance_miles', 'pickup_time_minutes', 'status',
+                                   'origin_lat', 'origin_lon', 'destination_lat', 'destination_lon']].copy()
+    
+    # 3. Unfulfilled trips
+    unfulfilled = trip_df[trip_df['status'] == 'unfulfilled'].copy()
+    unfulfilled_points = unfulfilled[['trip_id', 'datetime', 'origin_lat', 'origin_lon',
+                                    'reason', 'missed_revenue']].copy()
+    
+    # 4. Depot location
+    depot_df = pd.DataFrame([{
+        'name': 'Main Depot',
+        'lat': depot_location.lat,
+        'lon': depot_location.lon,
+        'type': 'charging_depot'
+    }])
+    
+    # Save to Kepler.gl compatible format
+    output_dir = "outputs/kepler"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Save layers
+    # Save GeoJSON for vehicle paths
+    vehicle_paths_geojson = {
+        "type": "FeatureCollection",
+        "features": [path['_geojson']['features'][0] for path in vehicle_paths]
+    }
+    with open(f"{output_dir}/vehicle_paths_{timestamp}.geojson", 'w') as f:
+        json.dump(vehicle_paths_geojson, f, default=str)
+    
+    # Save GeoJSON for trip paths
+    trip_paths_geojson = {
+        "type": "FeatureCollection",
+        "features": [path['_geojson']['features'][0] for path in trip_paths_df.to_dict('records')]
+    }
+    with open(f"{output_dir}/trip_paths_{timestamp}.geojson", 'w') as f:
+        json.dump(trip_paths_geojson, f, default=str)
+    
+    unfulfilled_points.to_csv(f"{output_dir}/unfulfilled_trips_{timestamp}.csv", index=False)
+    depot_df.to_csv(f"{output_dir}/depots_{timestamp}.csv", index=False)
+    
+    # Update Kepler config for new format
+    kepler_config = {
+        "version": "v1",
+        "config": {
+            "visState": {
+                "layers": [
+                    {
+                        "id": "vehicle_paths",
+                        "type": "trip",
+                        "config": {
+                            "dataId": "vehicle_paths",
+                            "columns": {
+                                "geojson": "_geojson"
+                            },
+                            "isVisible": True,
+                            "colorField": "new_state",
+                            "sizeField": "battery_level_pct",
+                            "visConfig": {
+                                "trailLength": 10,
+                                "animation": True
+                            }
+                        }
+                    },
+                    {
+                        "id": "trip_paths",
+                        "type": "trip",
+                        "config": {
+                            "dataId": "trip_paths",
+                            "columns": {
+                                "geojson": "_geojson"
+                            },
+                            "isVisible": True,
+                            "colorField": "fare",
+                            "sizeField": "distance_miles",
+                            "visConfig": {
+                                "trailLength": 10,
+                                "animation": True
+                            }
+                        }
+                    },
+                    {
+                        "id": "unfulfilled_trips",
+                        "type": "point",
+                        "config": {
+                            "dataId": "unfulfilled_trips",
+                            "columns": {
+                                "lat": "origin_lat",
+                                "lng": "origin_lon"
+                            },
+                            "isVisible": True,
+                            "colorField": "reason",
+                            "sizeField": "missed_revenue"
+                        }
+                    },
+                    {
+                        "id": "depots",
+                        "type": "point",
+                        "config": {
+                            "dataId": "depots",
+                            "columns": {
+                                "lat": "lat",
+                                "lng": "lon"
+                            },
+                            "isVisible": True,
+                            "color": [255, 0, 0]  # Red for depots
+                        }
+                    }
+                ]
+            }
+        }
+    }
+    
+    # Save Kepler config
+    with open(f"{output_dir}/kepler_config_{timestamp}.json", 'w') as f:
+        json.dump(kepler_config, f)
+    
+    return output_dir
 
 def get_latest_log_files():
     """Get the most recent vehicle and depot log files from outputs directory."""
@@ -71,6 +305,14 @@ def main():
         vehicle_df.to_csv(vehicle_log_file.replace('.jsonl', '.csv'), index=False)
         depot_df.to_csv(depot_log_file.replace('.jsonl', '.csv'), index=False)
         trip_df.to_csv(trip_log_file.replace('.jsonl', '.csv'), index=False)
+        
+        # Prepare Kepler.gl visualization data
+        depot_location = Location(
+            lat=config['geospatial']['depot']['lat'],
+            lon=config['geospatial']['depot']['lon']
+        )
+        kepler_dir = prepare_kepler_data(vehicle_df, trip_df, depot_location)
+        print(f"\nKepler.gl data saved to: {kepler_dir}")
         
         # Basic analysis
         print("\n=== Simulation Summary ===")
