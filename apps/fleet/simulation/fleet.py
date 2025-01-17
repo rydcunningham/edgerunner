@@ -46,12 +46,14 @@ class Vehicle:
         self.state_log = state_log
         self.road_network = road_network
         
-        # Initialize location randomly within initial radius of depot
-        self.current_location = random_point_in_radius(depot_location, initial_radius)
-        self.depot_location = depot_location
+        # Initialize location at depot node
+        self.depot_location = road_network.snap_to_node(depot_location)
+        self.current_location = self.depot_location
         
         # Track visited H3 cells
         self.visited_cells = {self.current_location.h3_cell}
+        
+        self.current_path = None  # Attribute to store the current path
         
     def set_state(self, new_state):
         if new_state != self.state:
@@ -69,6 +71,7 @@ class Vehicle:
                 'vehicle_id': self.id,
                 'old_state': self.state,
                 'new_state': new_state,
+                'current_path': self.current_path,
                 'km_traveled': self.km_traveled,
                 'distance_in_state': distance_in_state,  # Add distance traveled in this state
                 'battery_level_pct': (self.battery_level/self.battery_capacity)*100,
@@ -123,6 +126,9 @@ class Vehicle:
         """Drive to a specific location using road network."""
         # Get shortest path and distance from road network
         path, distance = self.road_network.get_shortest_path(self.current_location, destination)
+        
+        # Store the path for later use
+        self.current_path = path
         
         # Calculate driving time based on distance and speed
         if is_repositioning:

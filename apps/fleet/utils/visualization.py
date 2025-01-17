@@ -14,6 +14,7 @@ from utils.optimized import (
 from multiprocessing import Pool, cpu_count
 from itertools import islice
 from typing import List, Dict, Tuple, Any
+from numba import jit
 
 # Base UNIX timestamp for simulation start
 BASE_TIMESTAMP = 1564184363
@@ -25,17 +26,19 @@ LOG_BATCH_SIZE = 100
 NUM_PROCESSES = max(1, cpu_count() - 1)
 
 def jsonl_to_geojson(jsonl_path: str) -> dict:
-    """Convert a JSONL file containing GeoJSON features to a single GeoJSON FeatureCollection."""
-    geojson = {
+    # Read entire file at once - pandas handles JSON parsing efficiently
+    df = pd.read_json(jsonl_path, lines=True)
+    
+    # Vectorized extraction of features
+    features = (df['_geojson']
+               .apply(lambda x: x['features'][0] if x and 'features' in x else None)
+               .dropna()
+               .tolist())
+    
+    return {
         "type": "FeatureCollection",
-        "features": []
+        "features": features
     }
-    with open(jsonl_path, 'r') as f:
-        for line in f:
-            entry = json.loads(line)
-            if '_geojson' in entry:
-                geojson['features'].append(entry['_geojson']['features'][0])
-    return geojson
 
 def generate_geojson_files(output_dir: str):
     """Generate GeoJSON files from JSONL files after simulation completion."""
@@ -47,11 +50,11 @@ def generate_geojson_files(output_dir: str):
             json.dump(jsonl_to_geojson(vehicle_paths_jsonl), f)
     
     # Convert trip paths JSONL to GeoJSON
-    trip_paths_jsonl = os.path.join(output_dir, 'trip_paths.jsonl')
-    trip_paths_geojson = os.path.join(output_dir, 'trip_paths.geojson')
-    if os.path.exists(trip_paths_jsonl):
-        with open(trip_paths_geojson, 'w') as f:
-            json.dump(jsonl_to_geojson(trip_paths_jsonl), f)
+    #trip_paths_jsonl = os.path.join(output_dir, 'trip_paths.jsonl')
+    #trip_paths_geojson = os.path.join(output_dir, 'trip_paths.geojson')
+    #if os.path.exists(trip_paths_jsonl):
+    #    with open(trip_paths_geojson, 'w') as f:
+    #        json.dump(jsonl_to_geojson(trip_paths_jsonl), f)
 
 class LogBuffer:
     def __init__(self, filename: str, batch_size: int = LOG_BATCH_SIZE):
@@ -72,61 +75,34 @@ class LogBuffer:
                     f.write('\n')
             self.buffer.clear()
 
-def create_path_coords(start_loc: Location, end_loc: Location, road_network) -> Tuple[List[Tuple[float, float]], float]:
-    """Get path coordinates between two locations."""
-    path, distance = road_network.get_shortest_path(start_loc, end_loc)
-    if not path:
-        return None, 0
-    return road_network.get_path_coordinates(path), distance
-
 def process_vehicle_paths_batch(paths: List[Tuple]) -> List[Dict]:
-    """Process a batch of vehicle paths in parallel."""
     results = []
-    
     for start_data, end_data, road_network in paths:
-        # Get path between points
         start_loc = Location(start_data['lat'], start_data['lon'])
         end_loc = Location(end_data['lat'], end_data['lon'])
         
-        path, distance = road_network.get_shortest_path(start_loc, end_loc)
+        properties = {
+            "vehicle_id": start_data['vehicle_id'],
+            "old_state": start_data['old_state'],
+            "new_state": start_data['new_state'],
+            "battery_level_pct": float(start_data['battery_level_pct'])
+        }
         
-        if path:
-            # Get interpolated points
-            points = road_network.interpolate_path(path)
-            
-            # Convert points to arrays for faster processing
-            num_points = len(points)
-            coord_array = np.array([[p.lon, p.lat] for p in points])
-            
-            # Create evenly spaced timestamps
-            start_time = int(BASE_TIMESTAMP + start_data['timestamp'])
-            end_time = int(BASE_TIMESTAMP + end_data['timestamp'])
-            times = np.linspace(start_time, end_time, num_points)
-            
-            # Create GeoJSON feature using optimized arrays
-            coordinates = np.column_stack((
-                coord_array,
-                np.zeros(num_points, dtype=np.float64),
-                times
-            ))
-            
-            geojson = {
-                "type": "FeatureCollection",
-                "features": [{
-                    "type": "Feature",
-                    "properties": {
-                        "vehicle_id": start_data['vehicle_id'],
-                        "old_state": start_data['old_state'],
-                        "new_state": start_data['new_state'],
-                        "battery_level_pct": float(start_data['battery_level_pct'])
-                    },
-                    "geometry": {
-                        "type": "LineString",
-                        "coordinates": coordinates.tolist()
-                    }
-                }]
-            }
-            
+        # Use the stored path from the vehicle state
+        path = start_data.get('current_path')
+        if path is None:
+            print(f"Warning: No path found for vehicle {start_data['vehicle_id']} at timestamp {start_data['timestamp']}")
+            continue
+
+        result = process_path_optimized(
+            start_loc, end_loc, road_network,
+            int(BASE_TIMESTAMP + start_data['timestamp']),
+            int(BASE_TIMESTAMP + end_data['timestamp']),
+            properties,
+            path=path
+        )
+        
+        if result:
             results.append({
                 'vehicle_id': start_data['vehicle_id'],
                 'old_state': start_data['old_state'],
@@ -134,71 +110,44 @@ def process_vehicle_paths_batch(paths: List[Tuple]) -> List[Dict]:
                 'battery_level_pct': float(start_data['battery_level_pct']),
                 'distance': float(end_data['km_traveled'] - start_data['km_traveled']),
                 'timestamp': int(BASE_TIMESTAMP + start_data['timestamp']),
-                '_geojson': geojson
+                '_geojson': result['_geojson']
             })
     
     return results
 
+"""
 def process_trip_paths_batch(trips: List[Tuple]) -> List[Dict]:
-    """Process a batch of trip paths in parallel using Numba-optimized functions."""
+    #Process a batch of trip paths using vectorized operations where possible.
     results = []
     
     with timer.timer("trip_path_batch_processing"):
-        for trip, road_network in trips:
+        # Precompute trip durations and start times
+        trip_durations = np.array([trip['distance_miles'] / 15 * 3600 for trip, _ in trips])
+        start_times = np.array([BASE_TIMESTAMP + int(trip['timestamp']) for trip, _ in trips])
+        
+        for i, (trip, road_network) in enumerate(trips):
             with timer.timer("single_trip_path_processing"):
                 origin = Location(lat=trip['origin_lat'], lon=trip['origin_lon'])
                 destination = Location(lat=trip['destination_lat'], lon=trip['destination_lon'])
                 
-                with timer.timer("trip_coordinate_generation"):
-                    coords, distance = create_path_coords(origin, destination, road_network)
-                if not coords:
-                    continue
+                properties = {
+                    "trip_id": str(trip['trip_id']),
+                    "vehicle_id": str(trip['vehicle_id']),
+                    "fare": float(trip['fare']),
+                    "distance_miles": float(trip['distance_miles'])
+                }
                 
-                # Convert coordinates to numpy array for Numba processing
-                coords_array = np.array([(loc.lat, loc.lon) for loc in coords])
-                num_points = len(coords)
+                result = process_path_optimized(
+                    origin, destination, road_network,
+                    start_times[i], start_times[i] + int(trip_durations[i]),
+                    properties
+                )
                 
-                # Use Numba-optimized coordinate processing
-                with timer.timer("coordinate_array_creation"):
-                    coord_array = process_coordinates_batch_numba(coords_array)
-                
-                # Use Numba-optimized timestamp generation
-                with timer.timer("trip_timestamp_generation"):
-                    start_time = BASE_TIMESTAMP + int(trip['timestamp'])
-                    trip_duration_seconds = (distance / 15) * 3600  # Assume 15 mph average speed
-                    end_time = start_time + int(trip_duration_seconds)
-                    times = generate_timestamps_numba(start_time, end_time, num_points)
-                
-                # Create GeoJSON feature using optimized arrays
-                with timer.timer("trip_geojson_feature_creation"):
-                    # Stack coordinates, elevation (zeros), and times in one operation
-                    coordinates = np.column_stack((
-                        coord_array,
-                        np.zeros(num_points, dtype=np.float64),
-                        times
-                    ))
-                    
-                    geojson = {
-                        "type": "FeatureCollection",
-                        "features": [{
-                            "type": "Feature",
-                            "properties": {
-                                "trip_id": str(trip['trip_id']),
-                                "vehicle_id": str(trip['vehicle_id']),
-                                "fare": float(trip['fare']),
-                                "distance_miles": float(trip['distance_miles'])
-                            },
-                            "geometry": {
-                                "type": "LineString",
-                                "coordinates": coordinates.tolist()
-                            }
-                        }]
-                    }
-                
-                results.append({**trip, '_geojson': geojson})
+                if result:
+                    results.append({**trip, '_geojson': result['_geojson']})
     
     return results
-
+"""
 def batch_items(items: List[Any], batch_size: int):
     """Yield successive batch_size-sized chunks from items."""
     iterator = iter(items)
@@ -216,7 +165,7 @@ def prepare_kepler_data(vehicle_df: pd.DataFrame, trip_df: pd.DataFrame, depot_l
         
         # Initialize log buffers
         vehicle_log_buffer = LogBuffer(os.path.join(output_dir, 'vehicle_paths.jsonl'))
-        trip_log_buffer = LogBuffer(os.path.join(output_dir, 'trip_paths.jsonl'))
+        #trip_log_buffer = LogBuffer(os.path.join(output_dir, 'trip_paths.jsonl'))
         
         # Process and write vehicle paths
         with timer.timer("prepare_vehicle_paths"):
@@ -258,6 +207,7 @@ def prepare_kepler_data(vehicle_df: pd.DataFrame, trip_df: pd.DataFrame, depot_l
         vehicle_log_buffer.flush()
         
         # Process and write trip paths
+        """
         with timer.timer("prepare_trip_paths"):
             completed_trips = trip_df[trip_df['status'] == 'assigned'].copy()
             trip_groups = {}
@@ -291,7 +241,65 @@ def prepare_kepler_data(vehicle_df: pd.DataFrame, trip_df: pd.DataFrame, depot_l
                         trip_log_buffer.append(result)
         
         trip_log_buffer.flush()
-
+        """
         generate_geojson_files(output_dir)
         
         return output_dir
+
+def process_path_optimized(start_loc: Location, end_loc: Location, road_network, start_time: int, end_time: int, properties: dict, path: List[int] = None) -> dict:
+    """Process a path between two locations using numba-optimized functions."""
+    # Check if path is None
+    if path is None:
+        print(f"Warning: No path found for vehicle {properties['vehicle_id']} from {start_loc} to {end_loc}")
+        return None
+
+    # Calculate distance using rustworkx's edge data access
+    try:
+        distance = sum(float(road_network.G.get_edge_data(path[i], path[i+1])) for i in range(len(path)-1)) / 1609.34  # Convert meters to miles
+    except (TypeError, IndexError) as e:
+        print(f"Error calculating distance for path: {e}")
+        return None
+
+    if not path:
+        return None
+    
+    # Get coordinates for all nodes in path at once
+    coords = np.array([road_network.G.get_node_data(i) for i in path])
+    
+    # Calculate number of points based on path length
+    total_distance = sum(float(road_network.G.get_edge_data(path[i], path[i+1]) or 0) for i in range(len(path)-1))
+    num_points = min(40, max(10, int(total_distance / 400)))
+    
+    # Use Numba-optimized interpolation
+    interpolated_coords = interpolate_path_numba(coords, num_points)
+    
+    # Use Numba-optimized coordinate processing (swap lat/lon for GeoJSON)
+    coord_array = process_coordinates_batch_numba(interpolated_coords)
+    
+    # Generate timestamps using Numba
+    times = generate_timestamps_numba(start_time, end_time, num_points)
+    
+    # Stack coordinates, elevation (zeros), and times in one operation
+    coordinates = np.column_stack((
+        coord_array,
+        np.zeros(num_points, dtype=np.float64),
+        times
+    ))
+    
+    # Create GeoJSON feature
+    geojson = {
+        "type": "FeatureCollection",
+        "features": [{
+            "type": "Feature",
+            "properties": properties,
+            "geometry": {
+                "type": "LineString",
+                "coordinates": coordinates.tolist()
+            }
+        }]
+    }
+    
+    return {
+        'distance': distance,
+        '_geojson': geojson
+    }

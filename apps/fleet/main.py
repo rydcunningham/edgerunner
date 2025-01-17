@@ -171,6 +171,9 @@ def main():
         radius_miles=config['geospatial']['service_area']['radius']
     )
     
+    # Save network polygon to kepler directory
+    road_network.save_network_polygon(sim_dir)
+    
     # Prepare Kepler visualization (it will save files to kepler_dir)
     prepare_kepler_data(vehicle_df, trip_df, depot_location, road_network, output_dir=kepler_dir)
     

@@ -122,9 +122,9 @@ def simulate(env, config):
         """Generate a random trip request within the service area."""
         trip_counter = 0  # Initialize counter for trip IDs
         while True:
-            # Generate origin and destination within service area
-            origin = random_point_in_radius(service_area_center, service_area_radius)
-            destination = random_point_in_radius(service_area_center, service_area_radius)
+            # Generate origin and destination from road network nodes
+            origin = road_network.get_random_node_location()
+            destination = road_network.get_random_node_location()
             
             # Calculate trip distance using road network
             _, trip_distance = road_network.get_shortest_path(origin, destination)
