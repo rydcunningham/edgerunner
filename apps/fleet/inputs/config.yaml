@@ -37,7 +37,7 @@ geospatial:
     lat: 41.081023
     lon: -81.514202
   service_area:
-    radius: 7  # miles from depot
+    radius: 4  # miles from depot
     center:
       lat: 41.081023
       lon: -81.514202

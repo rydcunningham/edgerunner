@@ -1,17 +1,26 @@
 import math
 import random
+import h3
 from dataclasses import dataclass
 from typing import Tuple
 
-@dataclass
 class Location:
-    lat: float
-    lon: float
+    def __init__(self, lat: float, lon: float):
+        self.lat = lat
+        self.lon = lon
+        # Add H3 hexagon ID at resolution 7 using H3 4.0+ method
+        self.h3_cell = h3.latlng_to_cell(lat, lon, 7)
+    
+    def __str__(self):
+        return f"({self.lat}, {self.lon})"
+    
+    def __repr__(self):
+        return self.__str__()
 
 def haversine_distance(loc1: Location, loc2: Location) -> float:
-    """Calculate the great circle distance between two points in miles."""
-    R = 3959.87433  # Earth's radius in miles
-
+    """Calculate the great circle distance between two points on Earth."""
+    R = 6371  # Earth's radius in kilometers
+    
     lat1, lon1 = math.radians(loc1.lat), math.radians(loc1.lon)
     lat2, lon2 = math.radians(loc2.lat), math.radians(loc2.lon)
     
@@ -25,34 +34,52 @@ def haversine_distance(loc1: Location, loc2: Location) -> float:
 
 def random_point_in_radius(center: Location, radius_miles: float) -> Location:
     """Generate a random point within radius miles of center."""
-    # Convert radius from miles to degrees (rough approximation)
-    radius_deg = radius_miles / 69.0  # 69 miles per degree of latitude
+    # Convert miles to km
+    radius_km = radius_miles * 1.60934
     
-    # Generate random angle and radius
-    angle = random.uniform(0, 2 * math.pi)
-    r = radius_deg * math.sqrt(random.uniform(0, 1))
+    # Convert radius from km to degrees (approximate, assuming spherical Earth)
+    radius_deg = radius_km / 111.32  # 1 degree is approximately 111.32 km
     
-    # Convert back to lat/lon
-    dx = r * math.cos(angle)
-    dy = r * math.sin(angle)
-    
-    return Location(
-        lat=center.lat + dy,
-        lon=center.lon + dx / math.cos(math.radians(center.lat))
-    )
+    while True:
+        # Generate random angle and radius
+        angle = random.uniform(0, 2 * math.pi)
+        r = random.uniform(0, radius_deg)
+        
+        # Convert to lat/lon offset
+        dlat = r * math.cos(angle)
+        dlon = r * math.sin(angle) / math.cos(math.radians(center.lat))
+        
+        # Calculate new point
+        new_lat = center.lat + dlat
+        new_lon = center.lon + dlon
+        
+        # Create new location
+        new_loc = Location(new_lat, new_lon)
+        
+        # Check if point is within service area
+        if is_point_in_service_area(new_loc, center, radius_miles):
+            return new_loc
 
 def is_point_in_service_area(point: Location, center: Location, radius_miles: float) -> bool:
     """Check if a point is within the service area."""
-    return haversine_distance(point, center) <= radius_miles
+    distance_km = haversine_distance(point, center)
+    distance_miles = distance_km / 1.60934
+    return distance_miles <= radius_miles
 
-def find_nearest_vehicle(trip_origin: Location, available_vehicles: list) -> Tuple[int, float]:
-    """Find the nearest available vehicle to a trip origin.
-    Returns (vehicle_index, distance_miles)"""
-    if not available_vehicles:
-        return -1, float('inf')
+def find_nearest_vehicle(origin: Location, vehicles: list, max_distance_miles: float = float('inf')) -> tuple:
+    """Find the nearest available vehicle within max_distance_miles."""
+    min_distance = float('inf')
+    nearest_idx = -1
     
-    distances = [
-        (i, haversine_distance(trip_origin, v.current_location))
-        for i, v in enumerate(available_vehicles)
-    ]
-    return min(distances, key=lambda x: x[1]) 
+    for i, vehicle in enumerate(vehicles):
+        if vehicle.state != "idle":
+            continue
+            
+        distance_km = haversine_distance(origin, vehicle.current_location)
+        distance_miles = distance_km / 1.60934
+        
+        if distance_miles <= max_distance_miles and distance_miles < min_distance:
+            min_distance = distance_miles
+            nearest_idx = i
+    
+    return nearest_idx, min_distance 

@@ -104,8 +104,12 @@ def simulate(env, config):
                road_network)
         for i in range(config['fleet']['fleet_size'])
     ]
-    depot = ChargingDepot(env, config['charging_infrastructure']['chargers_per_depot'], 
-                         250, depot_log, write_depot_log)
+    depot = ChargingDepot(env, 
+                         config['charging_infrastructure']['chargers_per_depot'], 
+                         250,  # charger power
+                         depot_log, 
+                         write_depot_log,
+                         location=depot_location)  # Add depot location
     
     def generate_trip_request():
         """Generate a random trip request within the service area."""
@@ -128,8 +132,10 @@ def simulate(env, config):
                 'timestamp': env.now,
                 'origin_lat': origin.lat,
                 'origin_lon': origin.lon,
+                'origin_h3_cell': str(origin.h3_cell),
                 'destination_lat': destination.lat,
                 'destination_lon': destination.lon,
+                'destination_h3_cell': str(destination.h3_cell),
                 'distance_miles': trip_distance,
                 'surge_multiplier': surge,
                 'fare': trip_fare,
