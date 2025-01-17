@@ -24,6 +24,35 @@ LOG_BATCH_SIZE = 100
 # Number of processes to use (leave some cores free for system)
 NUM_PROCESSES = max(1, cpu_count() - 1)
 
+def jsonl_to_geojson(jsonl_path: str) -> dict:
+    """Convert a JSONL file containing GeoJSON features to a single GeoJSON FeatureCollection."""
+    geojson = {
+        "type": "FeatureCollection",
+        "features": []
+    }
+    with open(jsonl_path, 'r') as f:
+        for line in f:
+            entry = json.loads(line)
+            if '_geojson' in entry:
+                geojson['features'].append(entry['_geojson']['features'][0])
+    return geojson
+
+def generate_geojson_files(output_dir: str):
+    """Generate GeoJSON files from JSONL files after simulation completion."""
+    # Convert vehicle paths JSONL to GeoJSON
+    vehicle_paths_jsonl = os.path.join(output_dir, 'vehicle_paths.jsonl')
+    vehicle_paths_geojson = os.path.join(output_dir, 'vehicle_paths.geojson')
+    if os.path.exists(vehicle_paths_jsonl):
+        with open(vehicle_paths_geojson, 'w') as f:
+            json.dump(jsonl_to_geojson(vehicle_paths_jsonl), f)
+    
+    # Convert trip paths JSONL to GeoJSON
+    trip_paths_jsonl = os.path.join(output_dir, 'trip_paths.jsonl')
+    trip_paths_geojson = os.path.join(output_dir, 'trip_paths.geojson')
+    if os.path.exists(trip_paths_jsonl):
+        with open(trip_paths_geojson, 'w') as f:
+            json.dump(jsonl_to_geojson(trip_paths_jsonl), f)
+
 class LogBuffer:
     def __init__(self, filename: str, batch_size: int = LOG_BATCH_SIZE):
         self.filename = filename
@@ -189,231 +218,80 @@ def prepare_kepler_data(vehicle_df: pd.DataFrame, trip_df: pd.DataFrame, depot_l
         vehicle_log_buffer = LogBuffer(os.path.join(output_dir, 'vehicle_paths.jsonl'))
         trip_log_buffer = LogBuffer(os.path.join(output_dir, 'trip_paths.jsonl'))
         
-        # 1. Vehicle paths over time
+        # Process and write vehicle paths
         with timer.timer("prepare_vehicle_paths"):
-            # First sort by vehicle and timestamp to get proper path sequence
-            with timer.timer("vehicle_path_data_prep"):
-                vehicle_df = vehicle_df.sort_values(['vehicle_id', 'timestamp'])
-                
-                # Group vehicles by H3 cell for spatial indexing
-                vehicle_groups = {}
-                
-                for vehicle_id, group in vehicle_df.groupby('vehicle_id'):
-                    for i in range(len(group) - 1):
-                        start_data = group.iloc[i].to_dict()
-                        end_data = group.iloc[i + 1].to_dict()
-                        path_info = (start_data, end_data, road_network)
-                        
-                        # Group by start cell for parallel processing
-                        start_cell = start_data['h3_cell']
-                        if start_cell not in vehicle_groups:
-                            vehicle_groups[start_cell] = []
-                        vehicle_groups[start_cell].append(path_info)
+            vehicle_df = vehicle_df.sort_values(['vehicle_id', 'timestamp'])
+            vehicle_groups = {}
             
-            # Process paths in parallel batches by cell
+            for vehicle_id, group in vehicle_df.groupby('vehicle_id'):
+                for i in range(len(group) - 1):
+                    start_data = group.iloc[i].to_dict()
+                    end_data = group.iloc[i + 1].to_dict()
+                    path_info = (start_data, end_data, road_network)
+                    start_cell = start_data['h3_cell']
+                    if start_cell not in vehicle_groups:
+                        vehicle_groups[start_cell] = []
+                    vehicle_groups[start_cell].append(path_info)
+            
             with Pool(NUM_PROCESSES) as pool:
-                # Create batches maintaining spatial locality
-                with timer.timer("vehicle_path_batch_creation"):
-                    batches = []
-                    current_batch = []
-                    current_size = 0
-                    
-                    for cell, paths in vehicle_groups.items():
-                        if current_size + len(paths) > BATCH_SIZE:
-                            if current_batch:
-                                batches.append(current_batch)
-                            current_batch = paths
-                            current_size = len(paths)
-                        else:
-                            current_batch.extend(paths)
-                            current_size += len(paths)
-                    
-                    if current_batch:
-                        batches.append(current_batch)
+                batches = []
+                current_batch = []
+                current_size = 0
                 
-                with timer.timer("vehicle_path_parallel_processing"):
-                    for batch_results in pool.starmap(process_vehicle_paths_batch, [(batch,) for batch in batches]):
-                        for result in batch_results:
-                            vehicle_log_buffer.append(result)
+                for cell, paths in vehicle_groups.items():
+                    if current_size + len(paths) > BATCH_SIZE:
+                        if current_batch:
+                            batches.append(current_batch)
+                        current_batch = paths
+                        current_size = len(paths)
+                    else:
+                        current_batch.extend(paths)
+                        current_size += len(paths)
+                
+                if current_batch:
+                    batches.append(current_batch)
+                
+                for batch_results in pool.starmap(process_vehicle_paths_batch, [(batch,) for batch in batches]):
+                    for result in batch_results:
+                        vehicle_log_buffer.append(result)
         
-        # Ensure all vehicle logs are written
         vehicle_log_buffer.flush()
         
-        # 2. Trip paths with interpolated points
+        # Process and write trip paths
         with timer.timer("prepare_trip_paths"):
-            # Get completed trips
-            with timer.timer("trip_path_data_prep"):
-                completed_trips = trip_df[trip_df['status'] == 'assigned'].copy()
-                
-                # Group trips by origin H3 cell
-                trip_groups = {}
-                for _, trip in completed_trips.iterrows():
-                    origin_cell = trip['origin_h3_cell']
-                    if origin_cell not in trip_groups:
-                        trip_groups[origin_cell] = []
-                    trip_groups[origin_cell].append((trip, road_network))
+            completed_trips = trip_df[trip_df['status'] == 'assigned'].copy()
+            trip_groups = {}
             
-            # Process trip paths in parallel batches by cell
+            for _, trip in completed_trips.iterrows():
+                origin_cell = trip['origin_h3_cell']
+                if origin_cell not in trip_groups:
+                    trip_groups[origin_cell] = []
+                trip_groups[origin_cell].append((trip, road_network))
+            
             with Pool(NUM_PROCESSES) as pool:
-                with timer.timer("trip_path_batch_creation"):
-                    batches = []
-                    current_batch = []
-                    current_size = 0
-                    
-                    for cell, trips in trip_groups.items():
-                        if current_size + len(trips) > BATCH_SIZE:
-                            if current_batch:
-                                batches.append(current_batch)
-                            current_batch = trips
-                            current_size = len(trips)
-                        else:
-                            current_batch.extend(trips)
-                            current_size += len(trips)
-                    
-                    if current_batch:
-                        batches.append(current_batch)
+                batches = []
+                current_batch = []
+                current_size = 0
                 
-                with timer.timer("trip_path_parallel_processing"):
-                    for batch_results in pool.starmap(process_trip_paths_batch, [(batch,) for batch in batches]):
-                        for result in batch_results:
-                            trip_log_buffer.append(result)
-        
-        # Ensure all trip logs are written
-        trip_log_buffer.flush()
-        
-        # 3. Unfulfilled trips and depot points
-        with timer.timer("point_data_preparation"):
-            unfulfilled = trip_df[trip_df['status'] == 'unfulfilled'].copy()
-            # Select only the fields we need and ensure they exist
-            unfulfilled_fields = ['trip_id', 'timestamp', 'origin_lat', 'origin_lon', 'reason', 'missed_revenue']
-            # Add any missing fields with default values
-            for field in unfulfilled_fields:
-                if field not in unfulfilled.columns:
-                    if field == 'missed_revenue':
-                        unfulfilled[field] = 0.0
-                    elif field == 'reason':
-                        unfulfilled[field] = 'unknown'
+                for cell, trips in trip_groups.items():
+                    if current_size + len(trips) > BATCH_SIZE:
+                        if current_batch:
+                            batches.append(current_batch)
+                        current_batch = trips
+                        current_size = len(trips)
                     else:
-                        unfulfilled[field] = None
-            
-            unfulfilled_points = unfulfilled[unfulfilled_fields].copy()
-            
-            depot_df = pd.DataFrame([{
-                'name': 'Main Depot',
-                'lat': depot_location.lat,
-                'lon': depot_location.lon,
-                'type': 'charging_depot'
-            }])
+                        current_batch.extend(trips)
+                        current_size += len(trips)
+                
+                if current_batch:
+                    batches.append(current_batch)
+                
+                for batch_results in pool.starmap(process_trip_paths_batch, [(batch,) for batch in batches]):
+                    for result in batch_results:
+                        trip_log_buffer.append(result)
         
-        # Save layers
-        with timer.timer("save_output_files"):
-            # Save GeoJSON for vehicle paths
-            with timer.timer("vehicle_paths_geojson_creation"):
-                vehicle_paths_geojson = {
-                    "type": "FeatureCollection",
-                    "features": []
-                }
-                # Process each buffered result
-                for batch_results in vehicle_log_buffer.buffer:
-                    if '_geojson' in batch_results:
-                        vehicle_paths_geojson['features'].append(batch_results['_geojson']['features'][0])
-                
-                with open(os.path.join(output_dir, 'vehicle_paths.geojson'), 'w') as f:
-                    json.dump(vehicle_paths_geojson, f, default=str)
-            
-            # Save GeoJSON for trip paths
-            with timer.timer("trip_paths_geojson_creation"):
-                trip_paths_geojson = {
-                    "type": "FeatureCollection",
-                    "features": []
-                }
-                # Process each buffered result
-                for batch_results in trip_log_buffer.buffer:
-                    if '_geojson' in batch_results:
-                        trip_paths_geojson['features'].append(batch_results['_geojson']['features'][0])
-                
-                with open(os.path.join(output_dir, 'trip_paths.geojson'), 'w') as f:
-                    json.dump(trip_paths_geojson, f, default=str)
-            
-            with timer.timer("point_data_export"):
-                unfulfilled_points.to_csv(os.path.join(output_dir, 'unfulfilled_trips.csv'), index=False)
-                depot_df.to_csv(os.path.join(output_dir, 'depots.csv'), index=False)
-            
-            # Update Kepler config for new format
-            with timer.timer("kepler_config_generation"):
-                kepler_config = {
-                    "version": "v1",
-                    "config": {
-                        "visState": {
-                            "layers": [
-                                {
-                                    "id": "vehicle_paths",
-                                    "type": "trip",
-                                    "config": {
-                                        "dataId": "vehicle_paths",
-                                        "columns": {
-                                            "geojson": "_geojson"
-                                        },
-                                        "isVisible": True,
-                                        "colorField": "new_state",
-                                        "sizeField": "battery_level_pct",
-                                        "visConfig": {
-                                            "trailLength": 10,
-                                            "animation": True
-                                        }
-                                    }
-                                },
-                                {
-                                    "id": "trip_paths",
-                                    "type": "trip",
-                                    "config": {
-                                        "dataId": "trip_paths",
-                                        "columns": {
-                                            "geojson": "_geojson"
-                                        },
-                                        "isVisible": True,
-                                        "colorField": "fare",
-                                        "sizeField": "distance_miles",
-                                        "visConfig": {
-                                            "trailLength": 10,
-                                            "animation": True
-                                        }
-                                    }
-                                },
-                                {
-                                    "id": "unfulfilled_trips",
-                                    "type": "point",
-                                    "config": {
-                                        "dataId": "unfulfilled_trips",
-                                        "columns": {
-                                            "lat": "origin_lat",
-                                            "lng": "origin_lon"
-                                        },
-                                        "isVisible": True,
-                                        "colorField": "reason",
-                                        "sizeField": "missed_revenue"
-                                    }
-                                },
-                                {
-                                    "id": "depots",
-                                    "type": "point",
-                                    "config": {
-                                        "dataId": "depots",
-                                        "columns": {
-                                            "lat": "lat",
-                                            "lng": "lon"
-                                        },
-                                        "isVisible": True,
-                                        "color": [255, 0, 0]  # Red for depots
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-                
-                # Save Kepler config
-                with open(os.path.join(output_dir, 'kepler_config.json'), 'w') as f:
-                    json.dump(kepler_config, f)
+        trip_log_buffer.flush()
+
+        generate_geojson_files(output_dir)
         
-        return output_dir 
+        return output_dir
