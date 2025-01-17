@@ -1,5 +1,5 @@
 fleet:
-  fleet_size: 10
+  fleet_size: 100
   battery_capacity: 75
   average_miles_per_kwh: 4
   utilization: 1.8

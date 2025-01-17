@@ -78,8 +78,7 @@ class Vehicle:
                 'trips_completed': self.trips_completed,
                 'lat': self.current_location.lat,
                 'lon': self.current_location.lon,
-                'h3_cell': self.current_location.h3_cell,  # Store as integer
-                'visited_cells_count': len(self.visited_cells)
+                'h3_cell': self.current_location.h3_cell  # Store as integer
             })
             
             # Update last state km traveled
@@ -91,7 +90,7 @@ class Vehicle:
         """Update vehicle location and energy usage based on distance traveled."""
         self.current_location = new_location
         # Track new H3 cell
-        self.visited_cells.add(new_location.h3_cell)
+        #self.visited_cells.add(new_location.h3_cell)
         energy_used = distance_miles / self.efficiency
         self.battery_level -= energy_used
         self.km_traveled += distance_miles * 1.60934  # Convert miles to km
@@ -114,17 +113,17 @@ class Vehicle:
         
         return nearby
     
-    def get_coverage_stats(self) -> dict:
-        """Get statistics about the vehicle's coverage area."""
-        return {
-            'unique_cells_visited': len(self.visited_cells),
-            'current_cell': str(self.current_location.h3_cell),
-            'current_cell_neighbors': [str(c) for c in h3.grid_ring(self.current_location.h3_cell, 1)]
-        }
+    #def get_coverage_stats(self) -> dict:
+    #    """Get statistics about the vehicle's coverage area."""
+    #    return {
+    #        'unique_cells_visited': len(self.visited_cells),
+    #        'current_cell': str(self.current_location.h3_cell),
+    #        'current_cell_neighbors': [str(c) for c in h3.grid_ring(self.current_location.h3_cell, 1)]
+    #    }
 
     def drive_to_location(self, destination: Location, is_repositioning=False):
         """Drive to a specific location using road network."""
-        # Get shortest path and distance from road network
+        # Get shortest path and distance (in miles) from road network
         path, distance = self.road_network.get_shortest_path(self.current_location, destination)
         
         # Store the path for later use
@@ -155,11 +154,11 @@ class Vehicle:
             self.update_location(destination, distance)
             yield self.env.timeout(total_time_seconds)
 
-    def drive(self, distance_miles, is_repositioning=False, maintain_state=False):
-        """
-        Drive the vehicle a certain distance.
-        maintain_state: If True, don't change state at start/end (used for en_route_to_depot)
-        """
+    """def drive(self, distance_miles, is_repositioning=False, maintain_state=False):
+    
+    #    Drive the vehicle a certain distance.
+    #    maintain_state: If True, don't change state at start/end (used for en_route_to_depot)
+    
         if not (is_repositioning or maintain_state):
             self.set_state("on_trip")
         
@@ -169,7 +168,7 @@ class Vehicle:
         
         if not (is_repositioning or maintain_state):
             self.trips_completed += 1
-            self.set_state("idle")
+            self.set_state("idle")"""
 
     def go_to_depot(self):
         """Travel to the charging depot using road network."""
