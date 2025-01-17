@@ -7,204 +7,62 @@ from utils.timing import timer
 from utils.visualization import prepare_kepler_data
 import pandas as pd
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 import glob
 import time
+import sys
 
 def get_latest_log_files():
     """Get the most recent vehicle and depot log files from outputs directory."""
-    # Get the directory where main.py is located
     base_dir = os.path.dirname(os.path.abspath(__file__))
     output_dir = os.path.join(base_dir, 'outputs')
     
-    # Use absolute paths for glob
     vehicle_files = glob.glob(os.path.join(output_dir, 'vehicle_states_*.jsonl'))
     depot_files = glob.glob(os.path.join(output_dir, 'depot_events_*.jsonl'))
     trip_files = glob.glob(os.path.join(output_dir, 'trip_events_*.jsonl'))
     
     if not vehicle_files or not depot_files or not trip_files:
-        print(f"Searching in directory: {output_dir}")
-        print(f"Found vehicle files: {vehicle_files}")
-        print(f"Found depot files: {depot_files}")
-        print(f"Found trip files: {trip_files}")
         raise FileNotFoundError("Log files not found in outputs directory")
         
-    # Get most recent files based on timestamp in filename
-    latest_vehicle = max(vehicle_files, key=os.path.getctime)
-    latest_depot = max(depot_files, key=os.path.getctime)
-    latest_trip = max(trip_files, key=os.path.getctime)
-    
-    return latest_vehicle, latest_depot, latest_trip
+    return (max(f, key=os.path.getctime) for f in [vehicle_files, depot_files, trip_files])
 
 def main():
+    """Main simulation entry point."""
+    print("\nStarting simulation...")
+    simulation_start_time = time.time()
+    
     # Load config and run simulation
-    with timer.timer("config_loading"):
-        config = load_config("inputs/config.yaml")
+    config = load_config("inputs/config.yaml")
+    
     env = simpy.Environment()
+    env.process(simulate(env, config))
+    env.run(until=config['simulation']['simulation_duration'])
     
-    print("Starting simulation...")
-    with timer.timer("simulation_run"):
-        env.process(simulate(env, config))
-        env.run(until=config['simulation']['simulation_duration'])
-    print("Simulation complete. Processing results...")
-    
-    # Small delay to ensure files are fully written
+    # Small delay to ensure files are written
     time.sleep(1)
     
-    # Get the most recent log files
-    try:
-        with timer.timer("log_file_processing"):
-            vehicle_log_file, depot_log_file, trip_log_file = get_latest_log_files()
-            print(f"\nReading log files:\n{vehicle_log_file}\n{depot_log_file}\n{trip_log_file}")
-            
-            # Read logs into DataFrames
-            with timer.timer("log_file_reading"):
-                vehicle_df = pd.read_json(vehicle_log_file, lines=True)
-                depot_df = pd.read_json(depot_log_file, lines=True)
-                trip_df = pd.read_json(trip_log_file, lines=True)
-            
-            # Add human-readable timestamps
-            with timer.timer("timestamp_processing"):
-                sim_start_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-                vehicle_df['datetime'] = vehicle_df['timestamp'].apply(
-                    lambda x: sim_start_time + timedelta(seconds=x)
-                )
-                depot_df['datetime'] = depot_df['timestamp'].apply(
-                    lambda x: sim_start_time + timedelta(seconds=x)
-                )
-                trip_df['datetime'] = trip_df['timestamp'].apply(
-                    lambda x: sim_start_time + timedelta(seconds=x)
-                )
-            
-            # Save processed DataFrames as CSV
-            with timer.timer("csv_export"):
-                vehicle_df.to_csv(vehicle_log_file.replace('.jsonl', '.csv'), index=False)
-                depot_df.to_csv(depot_log_file.replace('.jsonl', '.csv'), index=False)
-                trip_df.to_csv(trip_log_file.replace('.jsonl', '.csv'), index=False)
-        
-        # Prepare Kepler.gl visualization data
-        with timer.timer("road_network_initialization"):
-            depot_location = Location(
-                lat=config['geospatial']['depot']['lat'],
-                lon=config['geospatial']['depot']['lon']
-            )
-            service_area_center = Location(
-                lat=config['geospatial']['service_area']['center']['lat'],
-                lon=config['geospatial']['service_area']['center']['lon']
-            )
-            service_area_radius = config['geospatial']['service_area']['radius']
-            
-            # Create road network for path visualization (will use cache if available)
-            road_network = RoadNetwork(service_area_center, service_area_radius)
-        
-        with timer.timer("kepler_data_preparation"):
-            kepler_dir = prepare_kepler_data(vehicle_df, trip_df, depot_location, road_network)
-            print(f"\nKepler.gl data saved to: {kepler_dir}")
-        
-        # Basic analysis
-        print("\n=== Simulation Summary ===")
-        
-        with timer.timer("metrics_calculation"):
-            # Calculate distance traveled by state first
-            vehicle_df = vehicle_df.sort_values(['vehicle_id', 'timestamp'])
-            vehicle_df['next_km'] = vehicle_df.groupby('vehicle_id')['km_traveled'].shift(-1).fillna(vehicle_df['km_traveled'])
-            vehicle_df['distance_in_state'] = vehicle_df['next_km'] - vehicle_df['km_traveled']
-            
-            # Calculate maintenance cost per state change
-            vehicle_df['maintenance_cost'] = vehicle_df['distance_in_state'] * (
-                config['costs']['maintenance']['vehicle_capex_per_mile'] + 
-                config['costs']['maintenance']['battery_capex_per_mile']
-            ) * 0.621371  # Convert km to miles for cost calculation
-        
-        # Now calculate financial metrics
-        print("\nFinancial Performance:")
-        total_revenue = trip_df[trip_df['status'] == 'assigned']['fare'].sum()
-        total_energy_cost = depot_df['energy_cost'].sum()
-        total_maintenance_cost = vehicle_df['maintenance_cost'].sum()
-        
-        # Calculate unfulfilled trip metrics
-        unfulfilled_trips = trip_df[trip_df['status'] == 'unfulfilled']
-        total_unfulfilled = len(unfulfilled_trips)
-        total_missed_revenue = unfulfilled_trips['missed_revenue'].sum()
-        unfulfilled_by_reason = unfulfilled_trips['reason'].value_counts()
-        
-        print(f"Total Revenue: ${total_revenue:,.2f}")
-        print(f"Missed Revenue: ${total_missed_revenue:,.2f}")
-        print(f"Operating Costs:")
-        print(f"  Energy: ${total_energy_cost:,.2f}")
-        print(f"  Maintenance: ${total_maintenance_cost:,.2f}")
-        total_costs = total_energy_cost + total_maintenance_cost
-        operating_income = total_revenue - total_costs
-        print(f"Total Operating Costs: ${total_costs:,.2f}")
-        print(f"Operating Income: ${operating_income:,.2f}")
-        print(f"Operating Margin: {(operating_income/total_revenue)*100:.1f}%")
-        
-        print("\nTrip Fulfillment:")
-        total_trips = len(trip_df)
-        print(f"Total Trips Requested: {total_trips}")
-        print(f"Trips Fulfilled: {len(trip_df[trip_df['status'] == 'assigned'])}")
-        print(f"Trips Unfulfilled: {total_unfulfilled}")
-        print(f"Fulfillment Rate: {(1 - total_unfulfilled/total_trips)*100:.1f}%")
-        print("\nUnfulfilled Trip Reasons:")
-        for reason, count in unfulfilled_by_reason.items():
-            print(f"  {reason}: {count} ({count/total_unfulfilled*100:.1f}%)")
-        
-        # Vehicle statistics
-        print("\nVehicle Statistics:")
-        final_states = vehicle_df.groupby('vehicle_id').last()
-        print(f"Total vehicles: {len(final_states)}")
-        print(f"Average distance per vehicle: {final_states['km_traveled'].mean():.1f} km")
-        print(f"Average trips per vehicle: {final_states['trips_completed'].mean():.1f}")
-        
-        # Get all unique states from both old_state and new_state
-        all_states = sorted(set(vehicle_df['old_state'].unique()) | set(vehicle_df['new_state'].unique()))
-        
-        # Group by new_state to capture distances in each state
-        state_metrics = {}
-        for state in all_states:
-            # Count occurrences (state transitions)
-            occurrences = len(vehicle_df[vehicle_df['new_state'] == state])
-            # Sum distances while in this state
-            total_distance = vehicle_df[vehicle_df['new_state'] == state]['distance_in_state'].sum()
-            # Calculate average
-            avg_distance = total_distance / occurrences if occurrences > 0 else 0
-            
-            state_metrics[state] = {
-                'occurrences': occurrences,
-                'total_distance': total_distance,
-                'avg_distance': avg_distance
-            }
-        
-        # Print state metrics
-        for state in all_states:
-            metrics = state_metrics[state]
-            print(f"{state}:")
-            print(f"  Occurrences: {metrics['occurrences']}")
-            print(f"  Total distance: {metrics['total_distance']:.1f} km")
-            print(f"  Average per occurrence: {metrics['avg_distance']:.1f} km")
-        
-        # State transitions
-        print("\nState Transitions:")
-        transitions = vehicle_df.groupby(['old_state', 'new_state']).size().reset_index(name='count')
-        transitions = transitions.sort_values('count', ascending=False)
-        
-        for _, row in transitions.iterrows():
-            print(f"{row['old_state']} -> {row['new_state']}: {row['count']}")
-        
-        # Charging statistics
-        print("\nCharging Depot Statistics:")
-        print(f"Total energy delivered: {depot_df['total_depot_energy'].max():.1f} kWh")
-        print(f"Total charging events: {len(depot_df)}")
-        print(f"Average energy per charging event: {depot_df['energy_delivered'].mean():.1f} kWh")
-        print(f"Average charging duration: {depot_df['charge_duration_minutes'].mean():.1f} minutes")
-        
-        # Queue statistics
-        print(f"Max vehicles in queue: {depot_df['vehicles_queued'].max()}")
-        print(f"Average queue length: {depot_df['vehicles_queued'].mean():.2f}")
-        
-    except FileNotFoundError as e:
-        print(f"Error: {e}")
-        print("Make sure the simulation has generated log files in the outputs directory")
+    # Process results and create visualization
+    vehicle_log, depot_log, trip_log = get_latest_log_files()
+    vehicle_df = pd.read_json(vehicle_log, lines=True)
+    trip_df = pd.read_json(trip_log, lines=True)
+    
+    depot_location = Location(
+        lat=config['geospatial']['depot']['lat'],
+        lon=config['geospatial']['depot']['lon']
+    )
+    road_network = RoadNetwork(
+        center=depot_location,
+        radius_miles=config['geospatial']['service_area']['radius']
+    )
+    
+    kepler_dir = prepare_kepler_data(vehicle_df, trip_df, depot_location, road_network)
+    
+    # Print total time
+    total_time = time.time() - simulation_start_time
+    print(f"Simulation completed in {total_time:.2f} seconds")
+    print(f"Results available in {kepler_dir}")
+    
+    return 0
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

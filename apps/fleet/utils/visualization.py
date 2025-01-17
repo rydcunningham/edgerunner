@@ -23,77 +23,86 @@ def create_path_coords(start_loc: Location, end_loc: Location, road_network) -> 
         return None, 0
     return road_network.get_path_coordinates(path), distance
 
-def process_vehicle_path_batch(args: Tuple[List[Dict], Any]) -> List[Dict]:
+def process_vehicle_paths_batch(paths: List[Tuple]) -> List[Dict]:
     """Process a batch of vehicle paths in parallel."""
-    paths, road_network = args
     results = []
     
     with timer.timer("vehicle_path_batch_processing"):
-        for path_data in paths:
+        for start_data, end_data, road_network in paths:
             with timer.timer("single_vehicle_path_processing"):
-                start = path_data['start']
-                end = path_data['end']
-                
-                if start['lon'] == end['lon'] and start['lat'] == end['lat']:
+                if start_data['lon'] == end_data['lon'] and start_data['lat'] == end_data['lat']:
                     continue
                     
-                start_loc = Location(lat=start['lat'], lon=start['lon'])
-                end_loc = Location(lat=end['lat'], lon=end['lon'])
+                start_loc = Location(lat=start_data['lat'], lon=start_data['lon'])
+                end_loc = Location(lat=end_data['lat'], lon=end_data['lon'])
                 
                 with timer.timer("path_coordinate_generation"):
                     coords, _ = create_path_coords(start_loc, end_loc, road_network)
                 if not coords:
                     continue
                     
-                # Create timestamps for each point
+                # Pre-allocate arrays for coordinates and timestamps
+                num_points = len(coords)
+                coord_array = np.empty((num_points, 2), dtype=np.float64)
+                
+                # Vectorized coordinate extraction
+                with timer.timer("coordinate_array_creation"):
+                    coord_array[:, 0] = [loc.lon for loc in coords]  # longitude
+                    coord_array[:, 1] = [loc.lat for loc in coords]  # latitude
+                
+                # Vectorized timestamp generation
                 with timer.timer("timestamp_generation"):
-                    num_points = len(coords)
                     times = np.linspace(
-                        BASE_TIMESTAMP + start['timestamp'],
-                        BASE_TIMESTAMP + end['timestamp'],
-                        num_points
+                        BASE_TIMESTAMP + start_data['timestamp'],
+                        BASE_TIMESTAMP + end_data['timestamp'],
+                        num_points,
+                        dtype=np.int64
                     )
                 
-                # Create GeoJSON feature
+                # Create GeoJSON feature using pre-allocated arrays
                 with timer.timer("geojson_feature_creation"):
+                    # Stack coordinates, elevation (zeros), and times in one operation
+                    coordinates = np.column_stack((
+                        coord_array,
+                        np.zeros(num_points, dtype=np.float64),
+                        times
+                    ))
+                    
                     geojson = {
                         "type": "FeatureCollection",
                         "features": [{
                             "type": "Feature",
                             "properties": {
-                                "vehicle_id": str(start['vehicle_id']),
-                                "old_state": str(start['old_state']),
-                                "new_state": str(start['new_state']),
-                                "battery_level_pct": float(start['battery_level_pct'])
+                                "vehicle_id": str(start_data['vehicle_id']),
+                                "old_state": str(start_data['old_state']),
+                                "new_state": str(start_data['new_state']),
+                                "battery_level_pct": float(start_data['battery_level_pct'])
                             },
                             "geometry": {
                                 "type": "LineString",
-                                "coordinates": [[float(lon), float(lat), 0, int(time)] 
-                                            for (lat, lon), time in zip(coords, times)]
+                                "coordinates": coordinates.tolist()
                             }
                         }]
                     }
                 
                 results.append({
-                    'vehicle_id': str(start['vehicle_id']),
-                    'old_state': str(start['old_state']),
-                    'new_state': str(start['new_state']),
-                    'battery_level_pct': float(start['battery_level_pct']),
-                    'distance': float(end['km_traveled'] - start['km_traveled']),
-                    'timestamp': int(BASE_TIMESTAMP + start['timestamp']),
-                    'datetime': str(start['datetime']),
+                    'vehicle_id': str(start_data['vehicle_id']),
+                    'old_state': str(start_data['old_state']),
+                    'new_state': str(start_data['new_state']),
+                    'battery_level_pct': float(start_data['battery_level_pct']),
+                    'distance': float(end_data['km_traveled'] - start_data['km_traveled']),
+                    'timestamp': int(BASE_TIMESTAMP + start_data['timestamp']),
                     '_geojson': geojson
                 })
     
     return results
 
-def process_trip_path_batch(args: Tuple[List[Dict], Any]) -> List[Dict]:
+def process_trip_paths_batch(trips: List[Tuple]) -> List[Dict]:
     """Process a batch of trip paths in parallel."""
-    trips, road_network = args
     results = []
     
     with timer.timer("trip_path_batch_processing"):
-        for trip in trips:
+        for trip, road_network in trips:
             with timer.timer("single_trip_path_processing"):
                 origin = Location(lat=trip['origin_lat'], lon=trip['origin_lon'])
                 destination = Location(lat=trip['destination_lat'], lon=trip['destination_lon'])
@@ -102,16 +111,36 @@ def process_trip_path_batch(args: Tuple[List[Dict], Any]) -> List[Dict]:
                     coords, distance = create_path_coords(origin, destination, road_network)
                 if not coords:
                     continue
-                    
-                # Create timestamps for each point
+                
+                # Pre-allocate arrays for coordinates and timestamps
+                num_points = len(coords)
+                coord_array = np.empty((num_points, 2), dtype=np.float64)
+                
+                # Vectorized coordinate extraction
+                with timer.timer("coordinate_array_creation"):
+                    coord_array[:, 0] = [loc.lon for loc in coords]  # longitude
+                    coord_array[:, 1] = [loc.lat for loc in coords]  # latitude
+                
+                # Vectorized timestamp generation
                 with timer.timer("trip_timestamp_generation"):
-                    num_points = len(coords)
                     start_time = BASE_TIMESTAMP + int(trip['timestamp'])
                     trip_duration_seconds = (distance / 15) * 3600  # Assume 15 mph average speed
-                    times = np.linspace(start_time, start_time + trip_duration_seconds, num_points)
+                    times = np.linspace(
+                        start_time,
+                        start_time + trip_duration_seconds,
+                        num_points,
+                        dtype=np.int64
+                    )
                 
-                # Create GeoJSON feature
+                # Create GeoJSON feature using pre-allocated arrays
                 with timer.timer("trip_geojson_feature_creation"):
+                    # Stack coordinates, elevation (zeros), and times in one operation
+                    coordinates = np.column_stack((
+                        coord_array,
+                        np.zeros(num_points, dtype=np.float64),
+                        times
+                    ))
+                    
                     geojson = {
                         "type": "FeatureCollection",
                         "features": [{
@@ -124,8 +153,7 @@ def process_trip_path_batch(args: Tuple[List[Dict], Any]) -> List[Dict]:
                             },
                             "geometry": {
                                 "type": "LineString",
-                                "coordinates": [[float(lon), float(lat), 0, int(time)] 
-                                            for (lat, lon), time in zip(coords, times)]
+                                "coordinates": coordinates.tolist()
                             }
                         }]
                     }
@@ -148,28 +176,49 @@ def prepare_kepler_data(vehicle_df: pd.DataFrame, trip_df: pd.DataFrame, depot_l
             with timer.timer("vehicle_path_data_prep"):
                 vehicle_df = vehicle_df.sort_values(['vehicle_id', 'timestamp'])
                 
-                # Prepare path data for parallel processing
+                # Group vehicles by H3 cell for spatial indexing
+                vehicle_groups = {}
                 path_data = []
+                
                 for vehicle_id, group in vehicle_df.groupby('vehicle_id'):
                     for i in range(len(group) - 1):
-                        path_data.append({
-                            'start': group.iloc[i].to_dict(),
-                            'end': group.iloc[i + 1].to_dict()
-                        })
+                        start_data = group.iloc[i].to_dict()
+                        end_data = group.iloc[i + 1].to_dict()
+                        path_info = (start_data, end_data, road_network)
+                        
+                        # Group by start cell for parallel processing
+                        start_cell = start_data['h3_cell']
+                        if start_cell not in vehicle_groups:
+                            vehicle_groups[start_cell] = []
+                        vehicle_groups[start_cell].append(path_info)
             
-            # Process paths in parallel batches
+            # Process paths in parallel batches by cell
             vehicle_paths = []
             with Pool(NUM_PROCESSES) as pool:
-                # Create batches of paths
+                # Create batches maintaining spatial locality
                 with timer.timer("vehicle_path_batch_creation"):
-                    batches = list(batch_items(path_data, BATCH_SIZE))
-                    batch_args = [(batch, road_network) for batch in batches]
+                    batches = []
+                    current_batch = []
+                    current_size = 0
+                    
+                    for cell, paths in vehicle_groups.items():
+                        if current_size + len(paths) > BATCH_SIZE:
+                            if current_batch:
+                                batches.append(current_batch)
+                            current_batch = paths
+                            current_size = len(paths)
+                        else:
+                            current_batch.extend(paths)
+                            current_size += len(paths)
+                    
+                    if current_batch:
+                        batches.append(current_batch)
                 
                 with timer.timer("vehicle_path_parallel_processing"):
-                    results = pool.map(process_vehicle_path_batch, batch_args)
-                    # Flatten results
-                    vehicle_paths = [path for batch in results for path in batch]
-                    
+                    # Use starmap for more efficient parallel processing
+                    for batch_results in pool.starmap(process_vehicle_paths_batch, [(batch,) for batch in batches]):
+                        vehicle_paths.extend(batch_results)
+        
         vehicle_paths_df = pd.DataFrame(vehicle_paths)
         
         # 2. Trip paths with interpolated points
@@ -177,19 +226,39 @@ def prepare_kepler_data(vehicle_df: pd.DataFrame, trip_df: pd.DataFrame, depot_l
             # Get completed trips
             with timer.timer("trip_path_data_prep"):
                 completed_trips = trip_df[trip_df['status'] == 'assigned'].copy()
-                trip_records = completed_trips.to_dict('records')
+                
+                # Group trips by origin H3 cell
+                trip_groups = {}
+                for _, trip in completed_trips.iterrows():
+                    origin_cell = trip['origin_h3_cell']
+                    if origin_cell not in trip_groups:
+                        trip_groups[origin_cell] = []
+                    trip_groups[origin_cell].append((trip, road_network))
             
-            # Process trip paths in parallel batches
+            # Process trip paths in parallel batches by cell
             with Pool(NUM_PROCESSES) as pool:
-                # Create batches of trips
                 with timer.timer("trip_path_batch_creation"):
-                    batches = list(batch_items(trip_records, BATCH_SIZE))
-                    batch_args = [(batch, road_network) for batch in batches]
+                    batches = []
+                    current_batch = []
+                    current_size = 0
+                    
+                    for cell, trips in trip_groups.items():
+                        if current_size + len(trips) > BATCH_SIZE:
+                            if current_batch:
+                                batches.append(current_batch)
+                            current_batch = trips
+                            current_size = len(trips)
+                        else:
+                            current_batch.extend(trips)
+                            current_size += len(trips)
+                    
+                    if current_batch:
+                        batches.append(current_batch)
                 
                 with timer.timer("trip_path_parallel_processing"):
-                    results = pool.map(process_trip_path_batch, batch_args)
-                    # Flatten results
-                    processed_trips = [trip for batch in results for trip in batch]
+                    processed_trips = []
+                    for batch_results in pool.starmap(process_trip_paths_batch, [(batch,) for batch in batches]):
+                        processed_trips.extend(batch_results)
             
             # Convert back to DataFrame
             with timer.timer("trip_path_dataframe_conversion"):
@@ -200,14 +269,14 @@ def prepare_kepler_data(vehicle_df: pd.DataFrame, trip_df: pd.DataFrame, depot_l
                         trip_paths_df[col] = trip_paths_df[col].astype(float)
                 
                 # Select required columns
-                trip_paths_df = trip_paths_df[['trip_id', 'vehicle_id', 'datetime', '_geojson', 'fare', 
+                trip_paths_df = trip_paths_df[['trip_id', 'vehicle_id', 'timestamp', '_geojson', 'fare', 
                                            'distance_miles', 'pickup_time_minutes', 'status',
                                            'origin_lat', 'origin_lon', 'destination_lat', 'destination_lon']].copy()
         
         # 3. Unfulfilled trips and depot points
         with timer.timer("point_data_preparation"):
             unfulfilled = trip_df[trip_df['status'] == 'unfulfilled'].copy()
-            unfulfilled_points = unfulfilled[['trip_id', 'datetime', 'origin_lat', 'origin_lon',
+            unfulfilled_points = unfulfilled[['trip_id', 'timestamp', 'origin_lat', 'origin_lon',
                                           'reason', 'missed_revenue']].copy()
             
             depot_df = pd.DataFrame([{

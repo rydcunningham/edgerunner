@@ -1,162 +1,155 @@
 import networkx as nx
 import osmnx as ox
 from utils.geo import Location, haversine_distance
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Set
 import numpy as np
 import os
 import hashlib
 import json
+import h3
+from functools import lru_cache
 
 class RoadNetwork:
-    def __init__(self, service_area_center: Location, service_area_radius: float):
-        """Initialize road network for the service area.
+    def __init__(self, center: Location, radius_miles: float):
+        self.center = center
+        self.radius_miles = radius_miles
         
-        Args:
-            service_area_center: Center point of service area
-            service_area_radius: Radius in miles to define the service area
-        """
-        # Convert radius to meters for OSMnx
-        radius_meters = service_area_radius * 1609.34
+        # Convert radius to meters for OSM
+        radius_meters = radius_miles * 1609.34
         
-        # Create cache directory if it doesn't exist
-        cache_dir = "cache"
-        if not os.path.exists(cache_dir):
-            os.makedirs(cache_dir)
-            
-        # Create cache key from parameters
-        cache_params = {
-            "lat": service_area_center.lat,
-            "lon": service_area_center.lon,
-            "radius_meters": radius_meters,
-            "network_type": "drive"
-        }
-        cache_key = hashlib.sha1(json.dumps(cache_params, sort_keys=True).encode()).hexdigest()
-        cache_file = os.path.join(cache_dir, f"{cache_key}.graphml")
+        # Download and create the road network
+        self.G = ox.graph_from_point((center.lat, center.lon), dist=radius_meters, network_type='drive')
         
-        if os.path.exists(cache_file):
-            print("\nLoading road network from cache...")
-            self.G = ox.load_graphml(cache_file)
-            print(f"Loaded network with {len(self.G.nodes)} nodes and {len(self.G.edges)} edges")
-        else:
-            print("\nDownloading road network from OpenStreetMap...")
-            print(f"Center: ({service_area_center.lat:.4f}, {service_area_center.lon:.4f})")
-            print(f"Radius: {service_area_radius:.1f} miles ({radius_meters:.0f} meters)")
-            
-            # Download and create road network graph
-            self.G = ox.graph_from_point(
-                (service_area_center.lat, service_area_center.lon),
-                dist=radius_meters,
-                network_type='drive'
-            )
-            
-            print(f"Downloaded network with {len(self.G.nodes)} nodes and {len(self.G.edges)} edges")
-            print("Saving network to cache...")
-            ox.save_graphml(self.G, cache_file)
+        # Cache for paths between H3 cells
+        self.path_cache: Dict[Tuple[str, str], Tuple[List, float]] = {}
         
-        print("Projecting network to UTM coordinates...")
-        # Project graph to UTM for accurate distance calculations
-        self.G_proj = ox.project_graph(self.G)
-        
-        # Cache nearest nodes for frequently accessed locations
-        self.node_cache: Dict[Tuple[float, float], int] = {}
-        
-    def get_nearest_node(self, location: Location) -> int:
-        """Get the nearest node in the road network to a given location."""
-        loc_key = (location.lat, location.lon)
-        if loc_key not in self.node_cache:
-            self.node_cache[loc_key] = ox.nearest_nodes(
-                self.G, location.lon, location.lat
-            )
-        return self.node_cache[loc_key]
+        # Create H3 cell to node mapping
+        self.cell_nodes: Dict[str, Set[int]] = {}
+        for node, data in self.G.nodes(data=True):
+            cell = h3.latlng_to_cell(data['y'], data['x'], 7)
+            if str(cell) not in self.cell_nodes:
+                self.cell_nodes[str(cell)] = set()
+            self.cell_nodes[str(cell)].add(node)
     
-    def get_shortest_path(self, origin: Location, destination: Location) -> Tuple[List[int], float]:
-        """Find the shortest path between two locations using the road network.
+    def _get_nearest_node(self, location: Location) -> int:
+        """Get nearest node to a location, using H3 cell for initial filtering."""
+        cell = str(location.h3_cell)
+        if cell in self.cell_nodes:
+            # First check nodes in the same cell
+            min_dist = float('inf')
+            nearest_node = None
+            for node in self.cell_nodes[cell]:
+                node_y = self.G.nodes[node]['y']
+                node_x = self.G.nodes[node]['x']
+                dist = (location.lat - node_y)**2 + (location.lon - node_x)**2
+                if dist < min_dist:
+                    min_dist = dist
+                    nearest_node = node
+            if nearest_node is not None:
+                return nearest_node
         
-        Returns:
-            Tuple containing:
-            - List of node IDs representing the path
-            - Total path distance in miles
-        """
-        # Get nearest nodes to origin and destination
-        origin_node = self.get_nearest_node(origin)
-        dest_node = self.get_nearest_node(destination)
+        # Fallback to checking neighboring cells or full graph
+        return ox.nearest_nodes(self.G, location.lon, location.lat)
+    
+    @lru_cache(maxsize=1024)
+    def _get_cached_path(self, start_cell: str, end_cell: str) -> Tuple[List, float]:
+        """Get cached path between H3 cells, computing if not found."""
+        cache_key = (start_cell, end_cell)
+        if cache_key not in self.path_cache:
+            # Get representative nodes for cells
+            start_nodes = self.cell_nodes.get(start_cell, set())
+            end_nodes = self.cell_nodes.get(end_cell, set())
+            
+            if not start_nodes or not end_nodes:
+                return None, 0
+            
+            # Use center nodes of cells
+            start_node = list(start_nodes)[0]
+            end_node = list(end_nodes)[0]
+            
+            try:
+                path = nx.shortest_path(self.G, start_node, end_node, weight='length')
+                distance = sum(self.G[path[i]][path[i+1]][0]['length'] for i in range(len(path)-1))
+                self.path_cache[cache_key] = (path, distance / 1609.34)  # Convert meters to miles
+            except nx.NetworkXNoPath:
+                self.path_cache[cache_key] = (None, 0)
         
+        return self.path_cache[cache_key]
+    
+    def get_shortest_path(self, start: Location, end: Location) -> Tuple[List, float]:
+        """Get shortest path between two locations using H3 cells for optimization."""
+        # First check if we have a cached path between the H3 cells
+        start_cell = str(start.h3_cell)
+        end_cell = str(end.h3_cell)
+        
+        if start_cell == end_cell:
+            # For same cell, compute direct path
+            start_node = self._get_nearest_node(start)
+            end_node = self._get_nearest_node(end)
+            try:
+                path = nx.shortest_path(self.G, start_node, end_node, weight='length')
+                distance = sum(self.G[path[i]][path[i+1]][0]['length'] for i in range(len(path)-1))
+                return path, distance / 1609.34  # Convert meters to miles
+            except nx.NetworkXNoPath:
+                return None, 0
+        
+        # Get cached path between cells
+        cell_path, cell_distance = self._get_cached_path(start_cell, end_cell)
+        if cell_path:
+            # Extend path to exact start/end points
+            start_node = self._get_nearest_node(start)
+            end_node = self._get_nearest_node(end)
+            
+            try:
+                prefix = nx.shortest_path(self.G, start_node, cell_path[0], weight='length')
+                suffix = nx.shortest_path(self.G, cell_path[-1], end_node, weight='length')
+                
+                # Combine paths and calculate total distance
+                full_path = prefix[:-1] + cell_path + suffix[1:]
+                distance = sum(self.G[full_path[i]][full_path[i+1]][0]['length'] for i in range(len(full_path)-1))
+                return full_path, distance / 1609.34
+            except nx.NetworkXNoPath:
+                pass
+        
+        # Fallback to direct path finding
+        start_node = self._get_nearest_node(start)
+        end_node = self._get_nearest_node(end)
         try:
-            # Get shortest path using NetworkX
-            path = nx.shortest_path(
-                self.G_proj,
-                origin_node,
-                dest_node,
-                weight='length'  # Use length attribute for shortest path
-            )
-            
-            # Calculate total path length in meters, handling multigraph edges
-            path_length = 0
-            for i in range(len(path)-1):
-                # Get the shortest edge between these nodes if there are multiple
-                edge_data = min(
-                    self.G_proj.get_edge_data(path[i], path[i+1]).values(),
-                    key=lambda x: x['length']
-                )
-                path_length += edge_data['length']
-            
-            # Convert to miles
-            path_length_miles = path_length / 1609.34
-            
-            return path, path_length_miles
-            
+            path = nx.shortest_path(self.G, start_node, end_node, weight='length')
+            distance = sum(self.G[path[i]][path[i+1]][0]['length'] for i in range(len(path)-1))
+            return path, distance / 1609.34
         except nx.NetworkXNoPath:
-            # If no path found, return None and use haversine as fallback
-            print(f"Warning: No path found between nodes {origin_node} and {dest_node}. Using direct distance.")
-            return None, haversine_distance(origin, destination)
+            return None, 0
     
-    def get_path_coordinates(self, path: List[int]) -> List[Tuple[float, float]]:
-        """Convert a path of node IDs to a list of (lat, lon) coordinates."""
-        return [
-            (self.G.nodes[node]['y'], self.G.nodes[node]['x'])
-            for node in path
-        ]
-    
-    def interpolate_path(self, path: List[int], num_points: int = 10) -> List[Location]:
-        """Interpolate points along a path for visualization or tracking.
-        
-        Args:
-            path: List of node IDs representing the path
-            num_points: Number of points to interpolate
-            
-        Returns:
-            List of Location objects representing interpolated points along the path
-        """
+    def get_path_coordinates(self, path: List) -> List[Location]:
+        """Convert path nodes to list of locations."""
         if not path:
             return []
-            
-        # Get coordinates for path
-        coords = self.get_path_coordinates(path)
+        return [Location(self.G.nodes[node]['y'], self.G.nodes[node]['x']) for node in path]
+    
+    def interpolate_path(self, path: List) -> List[Location]:
+        """Interpolate points along a path using numpy for efficiency."""
+        if not path or len(path) < 2:
+            return []
         
-        # Calculate cumulative distances
-        distances = [0]
-        for i in range(1, len(coords)):
-            prev = Location(lat=coords[i-1][0], lon=coords[i-1][1])
-            curr = Location(lat=coords[i][0], lon=coords[i][1])
-            distances.append(distances[-1] + haversine_distance(prev, curr))
+        # Extract coordinates
+        coords = np.array([(self.G.nodes[node]['y'], self.G.nodes[node]['x']) for node in path])
         
-        # Create evenly spaced points
-        total_distance = distances[-1]
-        if total_distance == 0:
-            return [Location(lat=coords[0][0], lon=coords[0][1])] * num_points
-            
+        # Calculate number of points based on path length
+        total_distance = sum(self.G[path[i]][path[i+1]][0]['length'] for i in range(len(path)-1))
+        num_points = max(10, int(total_distance / 100))  # One point every 100 meters
+        
+        # Create interpolated points
+        alphas = np.linspace(0, 1, num_points)
         points = []
-        for i in range(num_points):
-            target_dist = (i / (num_points - 1)) * total_distance
-            
-            # Find segment containing target distance
-            for j in range(len(distances) - 1):
-                if distances[j] <= target_dist <= distances[j + 1]:
-                    # Interpolate within segment
-                    ratio = (target_dist - distances[j]) / (distances[j + 1] - distances[j])
-                    lat = coords[j][0] + ratio * (coords[j + 1][0] - coords[j][0])
-                    lon = coords[j][1] + ratio * (coords[j + 1][1] - coords[j][1])
-                    points.append(Location(lat=lat, lon=lon))
-                    break
-                    
+        
+        for i in range(len(coords) - 1):
+            segment_points = np.array([
+                coords[i] + alpha * (coords[i+1] - coords[i])
+                for alpha in alphas
+            ])
+            points.extend([Location(lat, lon) for lat, lon in segment_points[:-1]])
+        
+        # Add final point
+        points.append(Location(coords[-1][0], coords[-1][1]))
         return points 

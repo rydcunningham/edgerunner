@@ -16,6 +16,11 @@ class Location:
     
     def __repr__(self):
         return self.__str__()
+        
+    def __iter__(self):
+        """Make Location iterable to support tuple unpacking of (lat, lon)."""
+        yield self.lat
+        yield self.lon
 
 def haversine_distance(loc1: Location, loc2: Location) -> float:
     """Calculate the great circle distance between two points on Earth."""
