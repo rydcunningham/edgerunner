@@ -17,12 +17,28 @@ def get_latest_log_files():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     output_dir = os.path.join(base_dir, 'outputs')
     
+    # Create output directory if it doesn't exist
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
     vehicle_files = glob.glob(os.path.join(output_dir, 'vehicle_states_*.jsonl'))
     depot_files = glob.glob(os.path.join(output_dir, 'depot_events_*.jsonl'))
     trip_files = glob.glob(os.path.join(output_dir, 'trip_events_*.jsonl'))
     
-    if not vehicle_files or not depot_files or not trip_files:
-        raise FileNotFoundError("Log files not found in outputs directory")
+    # If any of the files don't exist yet, create empty files
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    if not vehicle_files:
+        vehicle_files = [os.path.join(output_dir, f'vehicle_states_{timestamp}.jsonl')]
+        with open(vehicle_files[0], 'w') as f:
+            pass
+    if not depot_files:
+        depot_files = [os.path.join(output_dir, f'depot_events_{timestamp}.jsonl')]
+        with open(depot_files[0], 'w') as f:
+            pass
+    if not trip_files:
+        trip_files = [os.path.join(output_dir, f'trip_events_{timestamp}.jsonl')]
+        with open(trip_files[0], 'w') as f:
+            pass
         
     return (max(f, key=os.path.getctime) for f in [vehicle_files, depot_files, trip_files])
 

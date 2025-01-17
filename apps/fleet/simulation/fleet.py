@@ -70,7 +70,7 @@ class Vehicle:
                 'trips_completed': self.trips_completed,
                 'lat': self.current_location.lat,
                 'lon': self.current_location.lon,
-                'h3_cell': str(self.current_location.h3_cell),  # Convert H3 cell to string for serialization
+                'h3_cell': self.current_location.h3_cell,  # Store as integer
                 'visited_cells_count': len(self.visited_cells)
             })
             

@@ -51,71 +51,62 @@ def create_path_coords(start_loc: Location, end_loc: Location, road_network) -> 
     return road_network.get_path_coordinates(path), distance
 
 def process_vehicle_paths_batch(paths: List[Tuple]) -> List[Dict]:
-    """Process a batch of vehicle paths in parallel using Numba-optimized functions."""
+    """Process a batch of vehicle paths in parallel."""
     results = []
     
-    with timer.timer("vehicle_path_batch_processing"):
-        for start_data, end_data, road_network in paths:
-            with timer.timer("single_vehicle_path_processing"):
-                if start_data['lon'] == end_data['lon'] and start_data['lat'] == end_data['lat']:
-                    continue
-                    
-                start_loc = Location(lat=start_data['lat'], lon=start_data['lon'])
-                end_loc = Location(lat=end_data['lat'], lon=end_data['lon'])
-                
-                with timer.timer("path_coordinate_generation"):
-                    coords, _ = create_path_coords(start_loc, end_loc, road_network)
-                if not coords:
-                    continue
-                
-                # Convert coordinates to numpy array for Numba processing
-                coords_array = np.array([(loc.lat, loc.lon) for loc in coords])
-                num_points = len(coords)
-                
-                # Use Numba-optimized coordinate processing
-                with timer.timer("coordinate_array_creation"):
-                    coord_array = process_coordinates_batch_numba(coords_array)
-                
-                # Use Numba-optimized timestamp generation
-                with timer.timer("timestamp_generation"):
-                    start_time = BASE_TIMESTAMP + start_data['timestamp']
-                    end_time = BASE_TIMESTAMP + end_data['timestamp']
-                    times = generate_timestamps_numba(start_time, end_time, num_points)
-                
-                # Create GeoJSON feature using optimized arrays
-                with timer.timer("geojson_feature_creation"):
-                    coordinates = np.column_stack((
-                        coord_array,
-                        np.zeros(num_points, dtype=np.float64),
-                        times
-                    ))
-                    
-                    geojson = {
-                        "type": "FeatureCollection",
-                        "features": [{
-                            "type": "Feature",
-                            "properties": {
-                                "vehicle_id": str(start_data['vehicle_id']),
-                                "old_state": str(start_data['old_state']),
-                                "new_state": str(start_data['new_state']),
-                                "battery_level_pct": float(start_data['battery_level_pct'])
-                            },
-                            "geometry": {
-                                "type": "LineString",
-                                "coordinates": coordinates.tolist()
-                            }
-                        }]
+    for start_data, end_data, road_network in paths:
+        # Get path between points
+        start_loc = Location(start_data['lat'], start_data['lon'])
+        end_loc = Location(end_data['lat'], end_data['lon'])
+        
+        path, distance = road_network.get_shortest_path(start_loc, end_loc)
+        
+        if path:
+            # Get interpolated points
+            points = road_network.interpolate_path(path)
+            
+            # Convert points to arrays for faster processing
+            num_points = len(points)
+            coord_array = np.array([[p.lon, p.lat] for p in points])
+            
+            # Create evenly spaced timestamps
+            start_time = int(BASE_TIMESTAMP + start_data['timestamp'])
+            end_time = int(BASE_TIMESTAMP + end_data['timestamp'])
+            times = np.linspace(start_time, end_time, num_points)
+            
+            # Create GeoJSON feature using optimized arrays
+            coordinates = np.column_stack((
+                coord_array,
+                np.zeros(num_points, dtype=np.float64),
+                times
+            ))
+            
+            geojson = {
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "properties": {
+                        "vehicle_id": start_data['vehicle_id'],
+                        "old_state": start_data['old_state'],
+                        "new_state": start_data['new_state'],
+                        "battery_level_pct": float(start_data['battery_level_pct'])
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": coordinates.tolist()
                     }
-                
-                results.append({
-                    'vehicle_id': str(start_data['vehicle_id']),
-                    'old_state': str(start_data['old_state']),
-                    'new_state': str(start_data['new_state']),
-                    'battery_level_pct': float(start_data['battery_level_pct']),
-                    'distance': float(end_data['km_traveled'] - start_data['km_traveled']),
-                    'timestamp': int(BASE_TIMESTAMP + start_data['timestamp']),
-                    '_geojson': geojson
-                })
+                }]
+            }
+            
+            results.append({
+                'vehicle_id': start_data['vehicle_id'],
+                'old_state': start_data['old_state'],
+                'new_state': start_data['new_state'],
+                'battery_level_pct': float(start_data['battery_level_pct']),
+                'distance': float(end_data['km_traveled'] - start_data['km_traveled']),
+                'timestamp': int(BASE_TIMESTAMP + start_data['timestamp']),
+                '_geojson': geojson
+            })
     
     return results
 
@@ -293,8 +284,19 @@ def prepare_kepler_data(vehicle_df: pd.DataFrame, trip_df: pd.DataFrame, depot_l
         # 3. Unfulfilled trips and depot points
         with timer.timer("point_data_preparation"):
             unfulfilled = trip_df[trip_df['status'] == 'unfulfilled'].copy()
-            unfulfilled_points = unfulfilled[['trip_id', 'timestamp', 'origin_lat', 'origin_lon',
-                                          'reason', 'missed_revenue']].copy()
+            # Select only the fields we need and ensure they exist
+            unfulfilled_fields = ['trip_id', 'timestamp', 'origin_lat', 'origin_lon', 'reason', 'missed_revenue']
+            # Add any missing fields with default values
+            for field in unfulfilled_fields:
+                if field not in unfulfilled.columns:
+                    if field == 'missed_revenue':
+                        unfulfilled[field] = 0.0
+                    elif field == 'reason':
+                        unfulfilled[field] = 'unknown'
+                    else:
+                        unfulfilled[field] = None
+            
+            unfulfilled_points = unfulfilled[unfulfilled_fields].copy()
             
             depot_df = pd.DataFrame([{
                 'name': 'Main Depot',
