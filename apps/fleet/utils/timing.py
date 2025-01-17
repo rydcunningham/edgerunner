@@ -8,24 +8,31 @@ import atexit
 
 class Timer:
     def __init__(self, batch_size: int = 100):
-        self.output_dir = "outputs"
-        if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
-        
-        # Create timing log file with timestamp
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.log_file = f"{self.output_dir}/timing_logs_{timestamp}.jsonl"
-        
-        # Buffer for batching log entries
-        self.log_buffer: List[Dict] = []
         self.batch_size = batch_size
+        self.log_buffer: List[Dict] = []
+        self.output_dir = None
+        self.log_file = None
         
         # Register flush on exit
         atexit.register(self.flush_logs)
     
+    def _ensure_log_file(self):
+        """Ensure log file is initialized with current output directory."""
+        if self.log_file is None:
+            # Get output directory from environment or use default
+            base_dir = os.environ.get('SIMULATION_OUTPUT_DIR', 'outputs')
+            self.output_dir = os.path.join(base_dir, 'logs')
+            
+            # Ensure output directory exists
+            os.makedirs(self.output_dir, exist_ok=True)
+            
+            # Create timing log file
+            self.log_file = os.path.join(self.output_dir, 'timing.jsonl')
+    
     def flush_logs(self):
         """Write all remaining logs in buffer to file."""
         if self.log_buffer:
+            self._ensure_log_file()
             with open(self.log_file, 'a') as f:
                 for entry in self.log_buffer:
                     json.dump(entry, f)

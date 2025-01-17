@@ -175,19 +175,19 @@ def batch_items(items: List[Any], batch_size: int):
     iterator = iter(items)
     return iter(lambda: list(islice(iterator, batch_size)), [])
 
-def prepare_kepler_data(vehicle_df: pd.DataFrame, trip_df: pd.DataFrame, depot_location: Location, road_network) -> str:
+def prepare_kepler_data(vehicle_df: pd.DataFrame, trip_df: pd.DataFrame, depot_location: Location, road_network, output_dir: str = None) -> str:
     """Prepare data for Kepler.gl visualization using parallel processing."""
     with timer.timer("prepare_kepler_data_total"):
-        # Create output directory
-        output_dir = "outputs/kepler"
+        # Use provided output directory or create default
+        if output_dir is None:
+            output_dir = "outputs/kepler"
+        
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        
         # Initialize log buffers
-        vehicle_log_buffer = LogBuffer(f"{output_dir}/vehicle_paths_{timestamp}.jsonl")
-        trip_log_buffer = LogBuffer(f"{output_dir}/trip_paths_{timestamp}.jsonl")
+        vehicle_log_buffer = LogBuffer(os.path.join(output_dir, 'vehicle_paths.jsonl'))
+        trip_log_buffer = LogBuffer(os.path.join(output_dir, 'trip_paths.jsonl'))
         
         # 1. Vehicle paths over time
         with timer.timer("prepare_vehicle_paths"):
@@ -305,13 +305,6 @@ def prepare_kepler_data(vehicle_df: pd.DataFrame, trip_df: pd.DataFrame, depot_l
                 'type': 'charging_depot'
             }])
         
-        # Save to Kepler.gl compatible format
-        output_dir = "outputs/kepler"
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-        
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        
         # Save layers
         with timer.timer("save_output_files"):
             # Save GeoJSON for vehicle paths
@@ -325,7 +318,7 @@ def prepare_kepler_data(vehicle_df: pd.DataFrame, trip_df: pd.DataFrame, depot_l
                     if '_geojson' in batch_results:
                         vehicle_paths_geojson['features'].append(batch_results['_geojson']['features'][0])
                 
-                with open(f"{output_dir}/vehicle_paths_{timestamp}.geojson", 'w') as f:
+                with open(os.path.join(output_dir, 'vehicle_paths.geojson'), 'w') as f:
                     json.dump(vehicle_paths_geojson, f, default=str)
             
             # Save GeoJSON for trip paths
@@ -339,12 +332,12 @@ def prepare_kepler_data(vehicle_df: pd.DataFrame, trip_df: pd.DataFrame, depot_l
                     if '_geojson' in batch_results:
                         trip_paths_geojson['features'].append(batch_results['_geojson']['features'][0])
                 
-                with open(f"{output_dir}/trip_paths_{timestamp}.geojson", 'w') as f:
+                with open(os.path.join(output_dir, 'trip_paths.geojson'), 'w') as f:
                     json.dump(trip_paths_geojson, f, default=str)
             
             with timer.timer("point_data_export"):
-                unfulfilled_points.to_csv(f"{output_dir}/unfulfilled_trips_{timestamp}.csv", index=False)
-                depot_df.to_csv(f"{output_dir}/depots_{timestamp}.csv", index=False)
+                unfulfilled_points.to_csv(os.path.join(output_dir, 'unfulfilled_trips.csv'), index=False)
+                depot_df.to_csv(os.path.join(output_dir, 'depots.csv'), index=False)
             
             # Update Kepler config for new format
             with timer.timer("kepler_config_generation"):
@@ -420,7 +413,7 @@ def prepare_kepler_data(vehicle_df: pd.DataFrame, trip_df: pd.DataFrame, depot_l
                 }
                 
                 # Save Kepler config
-                with open(f"{output_dir}/kepler_config_{timestamp}.json", 'w') as f:
+                with open(os.path.join(output_dir, 'kepler_config.json'), 'w') as f:
                     json.dump(kepler_config, f)
         
         return output_dir 

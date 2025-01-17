@@ -41,6 +41,7 @@ class Vehicle:
         self.state = "idle"
         self.new_state = None  # For logging purposes
         self.km_traveled = 0
+        self._last_state_km = 0  # Initialize last state km traveled
         self.trips_completed = 0
         self.state_log = state_log
         self.road_network = road_network
@@ -59,6 +60,9 @@ class Vehicle:
             # Buffer the console output
             state_buffer.log_state_change(self)
             
+            # Calculate distance traveled since last state change
+            distance_in_state = self.km_traveled - self._last_state_km if hasattr(self, '_last_state_km') else 0
+            
             # Log to DataFrame
             self.state_log.append({
                 'timestamp': self.env.now,
@@ -66,6 +70,7 @@ class Vehicle:
                 'old_state': self.state,
                 'new_state': new_state,
                 'km_traveled': self.km_traveled,
+                'distance_in_state': distance_in_state,  # Add distance traveled in this state
                 'battery_level_pct': (self.battery_level/self.battery_capacity)*100,
                 'trips_completed': self.trips_completed,
                 'lat': self.current_location.lat,
@@ -73,6 +78,9 @@ class Vehicle:
                 'h3_cell': self.current_location.h3_cell,  # Store as integer
                 'visited_cells_count': len(self.visited_cells)
             })
+            
+            # Update last state km traveled
+            self._last_state_km = self.km_traveled
             
             self.state = new_state
 

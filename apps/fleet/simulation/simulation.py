@@ -25,16 +25,23 @@ def calculate_trip_fare(distance_miles, env_time, config):
             config['pricing']['per_mile_rate'] * distance_miles * surge)
 
 def simulate(env, config):
-    # Ensure output directory exists
-    output_dir = "outputs"
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    """Run the simulation with the given configuration."""
+    # Get output directories from environment
+    output_dir = os.environ.get('SIMULATION_OUTPUT_DIR', 'outputs')
+    logs_dir = os.path.join(output_dir, 'logs')
+    
+    # Ensure logs directory exists
+    os.makedirs(logs_dir, exist_ok=True)
     
     # Create files for logging
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    vehicle_log_file = f"{output_dir}/vehicle_states_{timestamp}.jsonl"
-    depot_log_file = f"{output_dir}/depot_events_{timestamp}.jsonl"
-    trip_log_file = f"{output_dir}/trip_events_{timestamp}.jsonl"
+    vehicle_log_file = os.path.join(logs_dir, 'vehicle_states.jsonl')
+    depot_log_file = os.path.join(logs_dir, 'depot_events.jsonl')
+    trip_log_file = os.path.join(logs_dir, 'trip_events.jsonl')
+    
+    # Initialize empty log files
+    for log_file in [vehicle_log_file, depot_log_file, trip_log_file]:
+        with open(log_file, 'w') as f:
+            pass  # Create empty file
     
     # Initialize logging lists for batch writing
     vehicle_state_log = []
