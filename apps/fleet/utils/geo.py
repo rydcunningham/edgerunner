@@ -3,6 +3,7 @@ import random
 import h3
 from dataclasses import dataclass
 from typing import Tuple
+from utils.optimized import haversine_distance_numba
 
 class Location:
     def __init__(self, lat: float, lon: float):
@@ -23,19 +24,8 @@ class Location:
         yield self.lon
 
 def haversine_distance(loc1: Location, loc2: Location) -> float:
-    """Calculate the great circle distance between two points on Earth."""
-    R = 6371  # Earth's radius in kilometers
-    
-    lat1, lon1 = math.radians(loc1.lat), math.radians(loc1.lon)
-    lat2, lon2 = math.radians(loc2.lat), math.radians(loc2.lon)
-    
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    
-    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
-    c = 2 * math.asin(math.sqrt(a))
-    
-    return R * c
+    """Calculate the great circle distance between two points on Earth using Numba-optimized function."""
+    return haversine_distance_numba(loc1.lat, loc1.lon, loc2.lat, loc2.lon)
 
 def random_point_in_radius(center: Location, radius_miles: float) -> Location:
     """Generate a random point within radius miles of center."""

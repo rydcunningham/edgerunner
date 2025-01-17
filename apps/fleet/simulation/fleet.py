@@ -5,6 +5,32 @@ import h3
 from datetime import datetime, timedelta
 from utils.geo import Location, haversine_distance, random_point_in_radius, is_point_in_service_area
 
+class VehicleStateBuffer:
+    def __init__(self, batch_size=100):
+        self.buffer = []
+        self.batch_size = batch_size
+    
+    def log_state_change(self, vehicle):
+        """Buffer a state change message."""
+        message = (f"Vehicle {vehicle.id} state change: {vehicle.state} -> {vehicle.new_state} | "
+                  f"KM_TRAVELED: {vehicle.km_traveled:.1f} | "
+                  f"BATTERY_CHARGE_LEVEL: {(vehicle.battery_level/vehicle.battery_capacity)*100:.1f}% | "
+                  f"TRIPS_COMPLETED: {vehicle.trips_completed} | "
+                  f"LOCATION: ({vehicle.current_location.lat:.3f}, {vehicle.current_location.lon:.3f})")
+        self.buffer.append(message)
+        
+        if len(self.buffer) >= self.batch_size:
+            self.flush()
+    
+    def flush(self):
+        """Print all buffered messages."""
+        if self.buffer:
+            print("\n".join(self.buffer))
+            self.buffer.clear()
+
+# Global state buffer
+state_buffer = VehicleStateBuffer()
+
 class Vehicle:
     def __init__(self, env, id, battery_capacity, efficiency, state_log, depot_location, initial_radius, road_network):
         self.env = env
@@ -13,6 +39,7 @@ class Vehicle:
         self.efficiency = efficiency  # miles per kWh
         self.battery_level = battery_capacity
         self.state = "idle"
+        self.new_state = None  # For logging purposes
         self.km_traveled = 0
         self.trips_completed = 0
         self.state_log = state_log
@@ -27,12 +54,10 @@ class Vehicle:
         
     def set_state(self, new_state):
         if new_state != self.state:
-            # Print to console
-            print(f"Vehicle {self.id} state change: {self.state} -> {new_state} | "
-                  f"KM_TRAVELED: {self.km_traveled:.1f} | "
-                  f"BATTERY_CHARGE_LEVEL: {(self.battery_level/self.battery_capacity)*100:.1f}% | "
-                  f"TRIPS_COMPLETED: {self.trips_completed} | "
-                  f"LOCATION: ({self.current_location.lat:.3f}, {self.current_location.lon:.3f})")
+            self.new_state = new_state  # Store new state for logging
+            
+            # Buffer the console output
+            state_buffer.log_state_change(self)
             
             # Log to DataFrame
             self.state_log.append({
