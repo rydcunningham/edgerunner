@@ -1,4 +1,9 @@
+'use client'
+import React from 'react'
+
 export default function Page() {
+  const [showLogs, setShowLogs] = React.useState(true)
+
   return (
     <div className="min-h-screen relative">
       <div className="w-full h-screen p-6 pl-[60px] pb-8">
@@ -44,25 +49,80 @@ export default function Page() {
               </div>
             </div>
 
-            {/* Terminal */}
+            {/* Terminal/Income Statement Toggle Box */}
             <div className="terminal-box flex-grow overflow-hidden p-4">
-              <div className="text-[11px] text-white/50 mb-2">SIMULATION LOGS</div>
-              <div className="font-mono text-[11px] space-y-1 h-[calc(100%-24px)] overflow-y-auto">
-                <div className="text-white/50">[INFO] Simulation initialized</div>
-                <div className="text-white/50">[INFO] Loading agent configurations...</div>
-                <div className="text-[#F75049]">[WARN] Resource allocation at 75%</div>
-                <div className="text-white/50">[INFO] Agent pathfinding optimized</div>
-                <div className="text-white/50">[DEBUG] Cache hit ratio: 0.89</div>
-                <div className="text-[#F75049]">[WARN] Network latency spike detected</div>
-                <div className="text-white/50">[INFO] Rebalancing workload...</div>
-                <div className="text-white/50 animate-pulse">_</div>
+              <div className="flex justify-between items-center mb-2">
+                <div className="text-[11px] text-white/50">
+                  {showLogs ? 'LOGS' : 'INCOME STATEMENT'}
+                </div>
+                <div className="flex items-center space-x-4">
+                  <button 
+                    className={`text-[11px] ${showLogs ? 'text-[#F75049]' : 'text-white/50'} hover:text-[#F75049] transition-colors`}
+                    onClick={() => setShowLogs(true)}
+                  >
+                    LOGS
+                  </button>
+                  <span className="text-white/50">·</span>
+                  <button 
+                    className={`text-[11px] ${!showLogs ? 'text-[#F75049]' : 'text-white/50'} hover:text-[#F75049] transition-colors`}
+                    onClick={() => setShowLogs(false)}
+                  >
+                    FINANCIALS
+                  </button>
+                </div>
               </div>
+
+              {showLogs ? (
+                // Terminal Logs View
+                <div className="font-mono text-[11px] space-y-1 h-[calc(100%-24px)] overflow-y-auto">
+                  <div className="text-white/50">[INFO] Simulation initialized</div>
+                  <div className="text-white/50">[INFO] Loading agent configurations...</div>
+                  <div className="text-[#F75049]">[WARN] Resource allocation at 75%</div>
+                  <div className="text-white/50">[INFO] Agent pathfinding optimized</div>
+                  <div className="text-white/50">[DEBUG] Cache hit ratio: 0.89</div>
+                  <div className="text-[#F75049]">[WARN] Network latency spike detected</div>
+                  <div className="text-white/50">[INFO] Rebalancing workload...</div>
+                  <div className="text-white/50 animate-pulse">_</div>
+                </div>
+              ) : (
+                // Income Statement View
+                <div className="font-mono text-[11px] space-y-4 h-[calc(100%-24px)] overflow-y-auto p-2">
+                  <div className="border-b border-white/10 pb-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-white/50">REVENUE (TRIP FARES)</span>
+                      <span className="text-[#F75049]">$842,150</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2 border-b border-white/10 pb-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-white/50">ENERGY COSTS</span>
+                      <span className="text-white/50">($215,430)</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-white/50">MAINTENANCE COSTS</span>
+                      <span className="text-white/50">($156,780)</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-white/50">OPERATING PROFIT</span>
+                      <span className="text-[#F75049]">$469,940</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-white/50">OPERATING MARGIN</span>
+                      <span className="text-[#F75049]">55.8%</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Right Column - Map */}
           <div className="terminal-box h-full p-4">
-            <div className="text-[11px] text-white/50 mb-2">SIMULATION MAP</div>
+            <div className="text-[11px] text-white/50 mb-2">MAP</div>
             <div className="w-full h-[calc(100%-24px)] bg-black/30 flex items-center justify-center rounded">
               <div className="text-white/50 text-sm">
                 Kepler.gl map loading...
