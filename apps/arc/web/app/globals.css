@@ -49,13 +49,24 @@
 }
 
 .nav-link {
-  @apply text-white/50 hover:text-[#F75049] transition-colors duration-200;
+  @apply text-white/50 hover:text-[#5EF6FF] transition-colors duration-200;
 }
 
 .nav-link.active {
-  @apply text-[#F75049];
+  @apply text-[#5EF6FF];
 }
 
 .terminal-box {
   @apply font-mono uppercase tracking-widest bg-black/20 p-6 rounded-lg border border-white/10;
+}
+
+/* Set the height of the side panel content to 60% of the viewport height */
+.side-panel__content {
+  height: 300px;
+}
+
+/* Allow the side panel inner to grow and expand its height */
+.side-panel--inner {
+  flex-grow: 1;
+  height: auto;
 } 

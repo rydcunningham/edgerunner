@@ -15,7 +15,7 @@ export default function Page() {
               {/* Big Number */}
               <div className="terminal-box p-4">
                 <div className="text-[11px] text-white/50 mb-2">ACTIVE AGENTS</div>
-                <div className="text-[#F75049] text-4xl font-bold">247</div>
+                <div className="text-[#5EF6FF] text-4xl font-bold">247</div>
               </div>
               
               {/* Bar Chart */}
@@ -25,7 +25,7 @@ export default function Page() {
                   {[40, 60, 30, 80, 50].map((height, i) => (
                     <div key={i} className="flex-1">
                       <div 
-                        className="bg-[#F75049] w-full transition-all" 
+                        className="bg-[#5EF6FF] w-full transition-all" 
                         style={{ height: `${height}%` }}
                       />
                     </div>
@@ -41,7 +41,7 @@ export default function Page() {
                     <path
                       d="M0,50 L20,30 L40,45 L60,20 L80,35 L100,25"
                       fill="none"
-                      stroke="#F75049"
+                      stroke="#5EF6FF"
                       strokeWidth="2"
                     />
                   </svg>
@@ -57,14 +57,14 @@ export default function Page() {
                 </div>
                 <div className="flex items-center space-x-4">
                   <button 
-                    className={`text-[11px] ${showLogs ? 'text-[#F75049]' : 'text-white/50'} hover:text-[#F75049] transition-colors`}
+                    className={`text-[11px] ${showLogs ? 'text-[#5EF6FF]' : 'text-white/50'} hover:text-[#5EF6FF] transition-colors`}
                     onClick={() => setShowLogs(true)}
                   >
                     LOGS
                   </button>
                   <span className="text-white/50">·</span>
                   <button 
-                    className={`text-[11px] ${!showLogs ? 'text-[#F75049]' : 'text-white/50'} hover:text-[#F75049] transition-colors`}
+                    className={`text-[11px] ${!showLogs ? 'text-[#5EF6FF]' : 'text-white/50'} hover:text-[#5EF6FF] transition-colors`}
                     onClick={() => setShowLogs(false)}
                   >
                     FINANCIALS
@@ -77,10 +77,10 @@ export default function Page() {
                 <div className="font-mono text-[11px] space-y-1 h-[calc(100%-24px)] overflow-y-auto">
                   <div className="text-white/50">[INFO] Simulation initialized</div>
                   <div className="text-white/50">[INFO] Loading agent configurations...</div>
-                  <div className="text-[#F75049]">[WARN] Resource allocation at 75%</div>
+                  <div className="text-[#5EF6FF]">[WARN] Resource allocation at 75%</div>
                   <div className="text-white/50">[INFO] Agent pathfinding optimized</div>
                   <div className="text-white/50">[DEBUG] Cache hit ratio: 0.89</div>
-                  <div className="text-[#F75049]">[WARN] Network latency spike detected</div>
+                  <div className="text-[#5EF6FF]">[WARN] Network latency spike detected</div>
                   <div className="text-white/50">[INFO] Rebalancing workload...</div>
                   <div className="text-white/50 animate-pulse">_</div>
                 </div>
@@ -90,7 +90,7 @@ export default function Page() {
                   <div className="border-b border-white/10 pb-4">
                     <div className="flex justify-between items-center">
                       <span className="text-white/50">REVENUE (TRIP FARES)</span>
-                      <span className="text-[#F75049]">$842,150</span>
+                      <span className="text-[#5EF6FF]">$842,150</span>
                     </div>
                   </div>
                   
@@ -108,11 +108,11 @@ export default function Page() {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-white/50">OPERATING PROFIT</span>
-                      <span className="text-[#F75049]">$469,940</span>
+                      <span className="text-[#5EF6FF]">$469,940</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-white/50">OPERATING MARGIN</span>
-                      <span className="text-[#F75049]">55.8%</span>
+                      <span className="text-[#5EF6FF]">55.8%</span>
                     </div>
                   </div>
                 </div>
