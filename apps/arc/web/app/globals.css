@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-black;
+    background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: 0 0;
+    background-attachment: fixed;
+  }
+}
+
+@keyframes glitch {
+  0% {
+    opacity: 0;
+    filter: brightness(2) saturate(1.5);
+  }
+  10% {
+    opacity: 0.5;
+    transform: translateX(2px);
+    filter: brightness(2) saturate(0.5);
+  }
+  20% {
+    opacity: 0.8;
+    filter: brightness(1.5) saturate(1.2);
+  }
+  30% {
+    opacity: 0;
+    transform: translateX(2px);
+  }
+  40% {
+    opacity: 1;
+    transform: translateX(0);
+    filter: none;
+  }
+  45% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+    filter: none;
+  }
+}
+
+.nav-link {
+  @apply text-white/50 hover:text-[#F75049] transition-colors duration-200;
+}
+
+.nav-link.active {
+  @apply text-[#F75049];
+}
+
+.terminal-box {
+  @apply font-mono uppercase tracking-widest bg-black/20 p-6 rounded-lg border border-white/10;
+} 
