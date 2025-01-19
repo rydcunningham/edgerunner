@@ -31,16 +31,20 @@ export default function RootLayout({
   return (
     <html lang="en" className={rajdhani.className}>
       <body className="min-h-screen relative bg-black">
+        {/* Header */}
+        <header className="fixed top-0 left-0 right-0 h-16 bg-black/90 z-50 border-b border-[#5EF6FF]/20 flex items-center justify-between px-6">
+          <div className="flex items-center">
+            <img src="/glyph.png" alt="Edgerunner Ventures" className="h-8 w-8" />
+            <div className="w-4" /> {/* Spacer */}
+            <h1 className="text-[#5EF6FF] text-xl tracking-wide">
+              ARC_SYSTEM
+            </h1>
+          </div>
+        </header>
+
         {/* Sidebar */}
-        <div className="fixed left-0 top-0 h-full bg-black w-[200px] z-[100] border-r border-[#5EF6FF]/20">
+        <div className="fixed left-0 top-16 h-full bg-black w-[200px] z-[100] border-r border-[#5EF6FF]/20">
           <div className="flex flex-col h-full p-4 space-y-4">
-            <div className="flex items-center mb-8">
-              <img src="/glyph.png" alt="Edgerunner Ventures" className="h-8 w-8" />
-              <div className="w-4" /> {/* Spacer */}
-              <h1 className="text-[#5EF6FF] text-xl tracking-wide">
-                ARC_SYSTEM
-              </h1>
-            </div>
             <nav>
               <ul className="space-y-4">
                 {navItems.map((item) => (
@@ -66,7 +70,7 @@ export default function RootLayout({
           </div>
         </div>
 
-        <main className="ml-[200px] pt-16">
+        <main className="ml-[220px] pt-16">
           {children}
         </main>
       </body>
