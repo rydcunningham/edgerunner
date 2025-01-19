@@ -11,7 +11,7 @@ const rajdhani = Rajdhani({
 export default function FilesPage() {
   return (
     <div className={`min-h-screen p-8 bg-black text-white ${rajdhani.className}`}>
-      <div className="terminal-box p-4">
+      <div className="p-4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl text-[#5EF6FF]">FILES</h2>
           <div className="flex space-x-4">
