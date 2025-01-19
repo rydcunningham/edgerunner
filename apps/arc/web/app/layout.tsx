@@ -13,6 +13,7 @@ const rajdhani = Rajdhani({
 })
 
 const navItems = [
+  { name: 'START', path: '/' },
   { name: 'SIM', path: '/main' },
   { name: 'DASH', path: '/dash' },
   { name: 'SYSTEM', path: '#', subItems: [
