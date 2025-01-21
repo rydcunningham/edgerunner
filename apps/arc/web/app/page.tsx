@@ -6,7 +6,7 @@ export default function OverviewPage() {
     <div className="min-h-screen p-8 bg-black text-white">
       {/* Header */}
       <header className="mb-12">
-        <h1 className="text-4xl text-[#5EF6FF] mb-4">Project: [ARC]</h1>
+        <h1 className="text-4xl text-[#5EF6FF] mb-4">ARMADA</h1>
         <p className="text-lg text-white/70">
           A library for optimizing and enhancing autonomous vehicle operations.
         </p>

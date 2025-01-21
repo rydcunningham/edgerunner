@@ -37,9 +37,10 @@ export default function RootLayout({
           <div className="flex items-center">
             <img src="/glyph.png" alt="Edgerunner Ventures" className="h-8 w-8" />
             <div className="w-4" /> {/* Spacer */}
-            <h1 className="text-[#5EF6FF] text-xl tracking-wide">
+            <img src="/armada.png" alt="Armada" className="h-6" />
+            {/* <h1 className="text-[#5EF6FF] text-xl tracking-wide">
               ARC_SYSTEM
-            </h1>
+            </h1> */}
           </div>
         </header>
 

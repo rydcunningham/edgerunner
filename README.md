@@ -1,5 +1,7 @@
 # Edgerunner.io
 
+![Glyph](./apps/arc/web/public/glyph.png)
+
 ## Current Projects
 
 ### 🌐 Web Portfolio
@@ -13,15 +15,17 @@ Scraping & conversion component for larger EDGE research platform.
 - Readability integration
 - API endpoint for agent-based enrichment
 
-### 🏙️ CitySim
+### 🏙️ Armada
 Interactive urban dynamics simulation framework capturing learnings from my Uber days.
-![Progress](https://progress-bar.xyz/60/?title=City%20Simulator&width=300)
+![Progress](https://progress-bar.xyz/80/?title=City%20Simulator&width=300)
 - Urban dynamics simulation framework
 - Agent-based modeling
 - Geospatial data integration
 - Visualization tools in development
+- Configurable simulation inputs
+- Enhanced vehicle and infrastructure modeling
 
-### 📊 EDGE.VIZ Library
+### 📊 Iris Library
 Self-made viz library, starting with ARASAKA theme
 ![Progress](https://progress-bar.xyz/75/?title=EdgeRunner%20Viz&width=300)
 - Seaborn and Matplotlib compatible

@@ -157,7 +157,7 @@ export default function ConfigPage() {
               <div>
                 <h4 className="text-xl text-[#5EF6FF] mb-2">AERIAL VEHICLES</h4>
                 <label className="block text-white/70 text-sm mb-2">Fleet Size</label>
-                <input type="number" className="w-full bg-black/30 border border-[#5EF6FF]/20 rounded p-2 text-white" placeholder="100" />
+                <input type="number" className="w-full bg-black/30 border border-[#5EF6FF]/20 rounded p-2 text-white" placeholder="10" />
                 {showOptional && (
                   <div className="mt-4 space-y-4">
                     <div>
@@ -174,11 +174,11 @@ export default function ConfigPage() {
                     </div>
                     <div>
                       <label className="block text-white/70 text-sm mb-2">Vehicle Capex ($)</label>
-                      <input type="number" className="w-full bg-black/30 border border-[#5EF6FF]/20 rounded p-2 text-white" placeholder="100000" />
+                      <input type="number" className="w-full bg-black/30 border border-[#5EF6FF]/20 rounded p-2 text-white" placeholder="800000" />
                     </div>
                     <div>
                       <label className="block text-white/70 text-sm mb-2">Battery Replacement Cost ($)</label>
-                      <input type="number" className="w-full bg-black/30 border border-[#5EF6FF]/20 rounded p-2 text-white" placeholder="15000" />
+                      <input type="number" className="w-full bg-black/30 border border-[#5EF6FF]/20 rounded p-2 text-white" placeholder="45000" />
                     </div>
                     <div>
                       <label className="block text-white/70 text-sm mb-2">Vehicle Useful Life (miles)</label>
