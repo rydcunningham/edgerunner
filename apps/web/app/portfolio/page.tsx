@@ -71,12 +71,12 @@ export default function Portfolio() {
         ]
       },
       {
-        name: "STEALTH",
-        description: "Identity infrastructure for combatting image-based abuse.",
+        name: "Alecto",
+        description: "Identity infrastructure. Stealth.",
         round: "Angel",
         domain: "app layer",
         year: "2024",
-        links: []
+        links: [{ label: "Site", url: "https://alectoai.com" }]
       },
       {
         name: "Cerebral Valley",
