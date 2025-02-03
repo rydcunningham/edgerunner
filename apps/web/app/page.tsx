@@ -24,7 +24,7 @@ export default function Page() {
             </div>
           </div>
 
-          {/* Terminal text */}
+          {/* Terminal text
           <div className="flex items-start lg:items-center justify-start pl-24 lg:pl-12 mt-12 lg:mt-0">
             <div className="font-rajdhani uppercase tracking-widest bg-black/20 p-6 rounded-lg border border-white/10 max-w-[400px]">
               <div className="space-y-3">
@@ -35,6 +35,7 @@ export default function Page() {
               </div>
             </div>
           </div>
+           */}
         </div>
       </div>
     </div>
