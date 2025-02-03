@@ -4,50 +4,33 @@ import Image from 'next/image'
 import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
-import MarkdownIt from 'markdown-it'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import rehypeRaw from 'rehype-raw'
 import type { Components } from 'react-markdown'
 
-const md = new MarkdownIt({
-  html: true,
-  linkify: true,
-  typographer: true
-})
+interface PostData {
+  slug: string;
+  content: string;
+  title: string;
+  date: string;
+}
 
-function getPostData(slug: string) {
-  const postsDirectory = path.join(process.cwd(), 'posts')
-  if (!fs.existsSync(postsDirectory)) {
-    return null
-  }
+function getPostData(slug: string): PostData {
+  const postsDirectory = path.join(process.cwd(), 'content/blog')
   const fullPath = path.join(postsDirectory, `${slug}.md`)
-  if (!fs.existsSync(fullPath)) {
-    return null
-  }
   const fileContents = fs.readFileSync(fullPath, 'utf8')
   const matterResult = matter(fileContents)
-  const contentHtml = md.render(matterResult.content)
 
   return {
     slug,
-    contentHtml,
+    content: matterResult.content,
     title: matterResult.data.title,
-    date: matterResult.data.date,
-    excerpt: matterResult.data.excerpt
+    date: matterResult.data.date
   }
 }
 
 export default function BlogPost({ params }: { params: { slug: string } }) {
-  const post = getPostData(params.slug)
-
-  if (!post) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-white/50">Post not found</p>
-      </div>
-    )
-  }
+  const { slug, content, title, date } = getPostData(params.slug)
 
   const components: Components = {
     img: (props) => {
@@ -98,36 +81,20 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col px-24">
-      <article className="mt-32 mb-16 max-w-3xl">
-        {/* Back link */}
-        <div className="mb-12">
-          <Link 
-            href="/blog" 
-            className="text-white/30 hover:text-[#F75049] transition-colors"
-          >
-            ← back to blog
-          </Link>
-        </div>
-
-        {/* Header */}
+    <div className="min-h-screen flex flex-col px-24 py-12 pt-36">
+      <article className="prose prose-invert max-w-3xl mx-auto">
         <header className="mb-12">
-          <h1 className="text-white/90 text-3xl font-medium mb-4">{post.title}</h1>
-          <div className="flex gap-4 text-sm text-white/30">
-            <span>{post.date}</span>
-          </div>
+          <h1 className="text-3xl text-white/90 mb-4">{title}</h1>
+          <div className="text-white/50 text-sm">{date}</div>
         </header>
 
-        {/* Content */}
-        <div className="prose prose-invert max-w-none">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeRaw]}
-            components={components}
-          >
-            {post.contentHtml}
-          </ReactMarkdown>
-        </div>
+        <ReactMarkdown 
+          components={components}
+          remarkPlugins={[remarkGfm]}
+          className="prose prose-invert"
+        >
+          {content}
+        </ReactMarkdown>
       </article>
     </div>
   )

@@ -227,4 +227,33 @@
   animation: glitch 0.5s ease-out 1s forwards;
 }
 
-/* Font will now be imported in layout.tsx */ 
+/* Font will now be imported in layout.tsx */
+
+/* Footnote styles */
+.footnote-ref {
+  @apply text-[#F75049] no-underline text-xs align-super cursor-pointer;
+}
+
+.footnote-ref::before {
+  content: '[';
+}
+
+.footnote-ref::after {
+  content: ']';
+}
+
+.footnotes {
+  @apply mt-8 pt-4 border-t border-white/10 text-white/50 text-sm;
+}
+
+.footnotes-list {
+  @apply list-none pl-0;
+}
+
+.footnotes-list li {
+  @apply mb-2;
+}
+
+.footnotes-list .footnote-backref {
+  @apply text-[#F75049] no-underline ml-2;
+} 

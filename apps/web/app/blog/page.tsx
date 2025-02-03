@@ -5,11 +5,17 @@ import path from 'path'
 import matter from 'gray-matter'
 
 function getAllPosts() {
-  const postsDirectory = path.join(process.cwd(), 'posts')
+  const postsDirectory = path.join(process.cwd(), 'content/blog')
   if (!fs.existsSync(postsDirectory)) {
     return []
   }
   const fileNames = fs.readdirSync(postsDirectory)
+    .filter(fileName => 
+      fileName.endsWith('.md') && 
+      !fileName.startsWith('image') && 
+      fileName !== 'images'
+    )
+  
   const allPostsData = fileNames.map(fileName => {
     const slug = fileName.replace(/\.md$/, '')
     const fullPath = path.join(postsDirectory, fileName)
