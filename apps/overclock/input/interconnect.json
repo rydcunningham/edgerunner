@@ -1,0 +1,203 @@
+{
+  "interconnect": {
+    "nvlink_4.0": {
+      "name": "NVLink 4.0",
+      "vendor": "NVIDIA",
+      "type": "intranode",
+      "release_date": "2023",
+      "bandwidth_per_link_GBps": 50,
+      "max_links_per_gpu": 18,
+      "total_bandwidth_GBps": 900,
+      "supported_hardware": [
+        "NVIDIA H100",
+        "NVIDIA H200",
+        "NVIDIA GB200 NVL2"
+      ],
+      "topology_options": ["fully_connected", "switched"],
+      "max_gpus_direct_connect": 8,
+      "source": "https://www.nvidia.com/en-us/data-center/nvlink/"
+    },
+    "nvlink_3.0": {
+      "name": "NVLink 3.0",
+      "vendor": "NVIDIA",
+      "type": "intranode",
+      "release_date": "2020",
+      "bandwidth_per_link_GBps": 50,
+      "max_links_per_gpu": 12,
+      "total_bandwidth_GBps": 600,
+      "supported_hardware": [
+        "NVIDIA A100",
+        "NVIDIA A30",
+        "NVIDIA A800"
+      ],
+      "topology_options": ["fully_connected", "switched"],
+      "max_gpus_direct_connect": 8,
+      "source": "https://images.nvidia.com/aem-dam/en-zz/Solutions/data-center/nvidia-ampere-architecture-whitepaper.pdf"
+    },
+    "nvlink_2.0": {
+      "name": "NVLink 2.0",
+      "vendor": "NVIDIA",
+      "type": "intranode",
+      "release_date": "2017",
+      "bandwidth_per_link_GBps": 25,
+      "max_links_per_gpu": 6,
+      "total_bandwidth_GBps": 300,
+      "supported_hardware": [
+        "NVIDIA V100",
+        "NVIDIA V100S"
+      ],
+      "topology_options": ["fully_connected"],
+      "max_gpus_direct_connect": 4,
+      "source": "https://images.nvidia.com/content/technologies/volta/pdf/volta-v100-datasheet-update-us-1165301-r5.pdf"
+    },
+    "nvlink_1.0": {
+      "name": "NVLink 1.0",
+      "vendor": "NVIDIA",
+      "type": "intranode",
+      "release_date": "2016",
+      "bandwidth_per_link_GBps": 20,
+      "max_links_per_gpu": 4,
+      "total_bandwidth_GBps": 80,
+      "supported_hardware": [
+        "NVIDIA P100"
+      ],
+      "topology_options": ["point_to_point"],
+      "max_gpus_direct_connect": 2,
+      "source": "https://images.nvidia.com/content/tesla/pdf/nvidia-tesla-p100-PCIe-datasheet.pdf"
+    },
+    "infinity_fabric_4": {
+      "name": "4th Gen Infinity Fabric",
+      "vendor": "AMD",
+      "type": "intranode",
+      "release_date": "2023",
+      "bandwidth_per_link_GBps": 128,
+      "max_links_per_gpu": 8,
+      "total_bandwidth_GBps": 896,
+      "supported_hardware": [
+        "AMD Instinct MI300X",
+        "AMD Instinct MI300A",
+        "AMD Instinct MI325X"
+      ],
+      "topology_options": ["fully_connected"],
+      "max_gpus_direct_connect": 8,
+      "source": "https://www.amd.com/content/dam/amd/en/documents/instinct-tech-docs/white-papers/amd-cdna3-white-paper.pdf"
+    },
+    "infinity_fabric_3": {
+      "name": "3rd Gen Infinity Fabric",
+      "vendor": "AMD",
+      "type": "intranode",
+      "release_date": "2021",
+      "bandwidth_per_link_GBps": 100,
+      "max_links_per_gpu": 6,
+      "total_bandwidth_GBps": 600,
+      "supported_hardware": [
+        "AMD Instinct MI250X",
+        "AMD Instinct MI250"
+      ],
+      "topology_options": ["fully_connected"],
+      "max_gpus_direct_connect": 8,
+      "source": "https://www.amd.com/content/dam/amd/en/documents/instinct-tech-docs/white-papers/amd-cdna2-white-paper.pdf"
+    },
+    "infinity_fabric_2": {
+      "name": "2nd Gen Infinity Fabric",
+      "vendor": "AMD",
+      "type": "intranode",
+      "release_date": "2019",
+      "bandwidth_per_link_GBps": 64,
+      "supported_hardware": [
+        "AMD Instinct MI100"
+      ],
+      "topology_options": ["fully_connected"],
+      "source": "https://www.amd.com/content/dam/amd/en/documents/instinct-tech-docs/white-papers/amd-cdna-whitepaper.pdf"
+    },
+    "tpu_ici_v5p": {
+      "name": "TPU Inter-Core Interconnect v5p",
+      "vendor": "Google",
+      "type": "intranode",
+      "release_date": "2023",
+      "bandwidth_per_link_GBps": 450,
+      "max_links_per_gpu": null,
+      "total_bandwidth_GBps": 2765,
+      "supported_hardware": ["TPU v5p"],
+      "topology_options": ["3D_mesh"],
+      "max_gpus_direct_connect": 4096,
+      "source": "https://cloud.google.com/tpu/docs/system-architecture-tpu-vm"
+    },
+    "tpu_ici_v4": {
+      "name": "TPU Inter-Core Interconnect v4",
+      "vendor": "Google",
+      "type": "intranode",
+      "release_date": "2020",
+      "bandwidth_per_link_GBps": 400,
+      "max_links_per_gpu": null,
+      "total_bandwidth_GBps": 1200,
+      "supported_hardware": ["TPU v4"],
+      "topology_options": ["3D_torus"],
+      "max_gpus_direct_connect": 4096,
+      "source": "https://cloud.google.com/tpu/docs/system-architecture-tpu-vm"
+    },
+    "tpu_ici_v3": {
+      "name": "TPU Inter-Core Interconnect v3",
+      "vendor": "Google",
+      "type": "intranode",
+      "release_date": "2018",
+      "bandwidth_per_link_GBps": 225,
+      "max_links_per_gpu": null,
+      "total_bandwidth_GBps": 900,
+      "supported_hardware": ["TPU v3"],
+      "topology_options": ["2D_toroidal"],
+      "max_gpus_direct_connect": null,
+      "source": "https://cloud.google.com/tpu/docs/system-architecture-tpu-vm"
+    },
+    "infiniband_xdr": {
+      "name": "InfiniBand XDR",
+      "vendor": "NVIDIA Networking",
+      "type": "internode",
+      "release_date": "2024",
+      "specification": "XDR",
+      "bandwidth_per_port_Gbps": 800,
+      "lanes_per_port": 4,
+      "supported_hardware": [
+        "NVIDIA ConnectX-8"
+      ],
+      "topology_options": ["fat_tree", "dragonfly+"],
+      "max_switches_hop": 3,
+      "source": "https://www.nvidia.com/en-us/networking/infiniband/"
+    },
+    "infiniband_ndr": {
+      "name": "InfiniBand NDR",
+      "vendor": "NVIDIA Networking",
+      "type": "internode",
+      "release_date": "2022",
+      "specification": "NDR",
+      "bandwidth_per_port_Gbps": 400,
+      "lanes_per_port": 4,
+      "supported_hardware": [
+        "NVIDIA ConnectX-7",
+        "NVIDIA H100",
+        "NVIDIA H200",
+        "AMD MI300X"
+      ],
+      "topology_options": ["fat_tree", "dragonfly+"],
+      "max_switches_hop": 3,
+      "source": "https://www.nvidia.com/en-us/networking/infiniband/"
+    },
+    "infiniband_hdr": {
+      "name": "InfiniBand HDR",
+      "vendor": "NVIDIA Networking",
+      "type": "internode",
+      "release_date": "2019",
+      "specification": "HDR",
+      "bandwidth_per_port_Gbps": 200,
+      "lanes_per_port": 4,
+      "supported_hardware": [
+        "NVIDIA ConnectX-6",
+        "NVIDIA A100",
+        "AMD MI250X"
+      ],
+      "topology_options": ["fat_tree", "dragonfly"],
+      "max_switches_hop": 3,
+      "source": "https://www.nvidia.com/en-us/networking/infiniband/"
+    }
+  }
+}

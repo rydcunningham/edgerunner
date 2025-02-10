@@ -1,0 +1,113 @@
+{
+    "systems": {
+      "nvidia_dgx_h100": {
+        "name": "NVIDIA DGX H100",
+        "vendor": "NVIDIA",
+        "release_date": "2022-03",
+        "configurations": {
+          "8x_sxm5_700w": {
+            "components": {
+              "accelerator": {
+                "id": "nvidia_h100_sxm5_80gb",
+                "quantity": 8
+              }
+            },
+            "interconnect": {
+              "intranode": "nvlink_4.0",
+              "internode": "infiniband_ndr_400",
+              "internode_ports": 8
+            },
+            "form_factor": "5U",
+            "msrp_usd": 350000,
+            "source": "https://docs.nvidia.com/dgx/dgxh100-user-guide/introduction-to-dgxh100.html"
+          },
+          "4x_sxm5_700w": {
+            "components": {
+              "accelerator": {
+                "id": "nvidia_h100_sxm5_80gb",
+                "quantity": 4
+              }
+            },
+            "interconnect": {
+              "intranode": "nvlink_4.0",
+              "internode": "infiniband_ndr",
+              "internode_ports": 4
+            },
+            "form_factor": "4U",
+            "msrp_usd": 100000,
+            "source": "https://resources.nvidia.com/en-us-data-center-overview-mc/en-us-data-center-overview/grace-hopper-superchip-datasheet-partner"
+          }
+        }
+      },
+      "nvidia_dgx_h200": {
+        "name": "NVIDIA DGX H200",
+        "vendor": "NVIDIA",
+        "release_date": "2023-11",
+        "configurations": {
+          "8x_sxm5_700w": {
+            "components": {
+              "accelerator": {
+                "id": "nvidia_h200_sxm",
+                "quantity": 8
+              }
+            },
+            "interconnect": {
+              "intranode": "nvlink_4.0",
+              "internode": "infiniband_ndr_400",
+              "internode_ports": 8
+            },
+            "form_factor": "5U",
+            "msrp_usd": 400000,
+            "source": "https://docs.nvidia.com/dgx/dgxh100-user-guide/introduction-to-dgxh100.html"
+          }
+        }
+      },
+      "nvidia_dgx_gh200": {
+        "name": "NVIDIA DGX GH200",
+        "vendor": "NVIDIA",
+        "release_date": "2023-05",
+        "configurations": {
+          "8x_gh200_700w": {
+            "components": {
+              "accelerator": {
+                "id": "nvidia_gh200",
+                "quantity": 8
+              }
+            },
+            "interconnect": {
+              "intranode": "nvlink_4.0",
+              "internode": "infiniband_ndr_400",
+              "internode_ports": 8
+            },
+            "form_factor": "5U",
+            "msrp_usd": 400000,
+            "source": "https://nvidianews.nvidia.com/news/nvidia-announces-dgx-gh200-ai-supercomputer"
+          }
+        }
+      },
+      "nvidia_gb200_nvl72": {
+        "name": "NVIDIA GB200 NVL72",
+        "vendor": "NVIDIA",
+        "release_date": "2024-03",
+        "configurations": {
+          "72x_nvl72_1000w": {
+            "components": {
+              "accelerator": {
+                "id": "nvidia_gb200",
+                "quantity": 72
+              }
+            },
+            "interconnect": {
+              "intranode": "nvlink_4.0",
+              "internode": "infiniband_ndr_400",
+              "internode_ports": 16
+            },
+            "form_factor": "48U",
+            "msrp_usd": 3000000,
+            "source": "https://www.nvidia.com/en-us/data-center/gb200-nvl72/"
+          }
+        }
+      }
+    }
+  }
+  

@@ -1,0 +1,38 @@
+{
+    "models": {
+      "llama_3_70b": {
+        "name": "Llama 3 70B",
+        "architecture": "dense",
+        "parameters": {
+          "total": 7e10,
+          "active_per_token": 7e10
+        },
+        "token_embedding_dimension": 6144,
+        "context_window": 2048,
+        "fudge_factors": {
+          "alpha": 1.5,
+          "beta_traditional": 2.0,
+          "beta_adjusted": 0.134
+        }
+      },
+      "deepseek_v2": {
+        "name": "DeepSeek V2",
+        "architecture": "mixture_of_experts",
+        "parameters": {
+          "total": 2.36e11,
+          "active_per_token": 2.1e10,
+          "num_experts": 8,
+          "experts_per_token": 2
+        },
+        "token_embedding_dimension": 6144,
+        "context_window": 2048,
+        "fudge_factors": {
+          "alpha": 1.5,
+          "beta_traditional": 2.0,
+          "beta_adjusted": 0.134,
+          "routing_overhead": 0.05
+        },
+        "notes": "DeepSeek's architecture-based load balancing reduces but doesn't eliminate routing overhead. The overhead is primarily from the initial expert selection rather than traditional load balancing calculations."
+      }
+    }
+}
