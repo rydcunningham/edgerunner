@@ -10,9 +10,12 @@ import json
 import h3
 from functools import lru_cache
 import scipy.sparse as sp
+import multiprocessing
+from joblib import Parallel, delayed
+import time
 
 class RoadNetwork:
-    def __init__(self, center: Location, radius_miles: float):
+    def __init__(self, center: Location, radius_miles: float, parallel_precompute: bool = False, tuning_factor: float = 6.0):
         self.center = center
         self.radius_miles = radius_miles
         
@@ -20,48 +23,164 @@ class RoadNetwork:
         radius_meters = radius_miles * 1609.34
         
         # Download the road network using OSMnx
-        nx_graph = ox.graph_from_point((center.lat, center.lon), dist=radius_meters, network_type='drive')
+        start = time.time()
+        self.G_nx = ox.graph_from_point((center.lat, center.lon), dist=radius_meters, network_type='drive')
+        print(f"Download of G_nx with {len(self.G_nx.nodes())} nodes and {len(self.G_nx.edges())} edges completed in {time.time() - start} seconds.")
         
         # Convert NetworkX graph to rustworkx graph
-        self.G = rx.PyDiGraph()
-        
+        self.G_rx = rx.PyDiGraph()
         # Add nodes with their attributes
-        node_mapping = {}  # Map old node IDs to new indices
-        nodes = list(nx_graph.nodes(data=True))
-        for node_id, data in nodes:
-            idx = self.G.add_node((data['y'], data['x']))  # Store coordinates as node data
-            node_mapping[node_id] = idx
+        # Define the dtype for our structured array
+        node_dtype = np.dtype([
+            ('nx_id', object),    # NetworkX node ID
+            ('lon', np.float64),    # longitude
+            ('lat', np.float64),    # latitude
+            ('hex_id', object),     # H3 hex ID at default resolution=9
+            ('rx_idx', np.int64)    # Rustworkx index
+        ])
+        self.G_nx_nodes = list(self.G_nx.nodes(data=True))
+        self.node_mapping = np.empty(len(self.G_nx_nodes), dtype=node_dtype)
+        self.cell_nodes: Dict(str, Set[int]) = {}
+        self._populate_G_rx()
+
+        self.unique_cells = np.unique(self.node_mapping['hex_id'])
+        for node in self.node_mapping:
+            if node['hex_id'] not in self.cell_nodes:
+                self.cell_nodes[node['hex_id']] = set()
+            self.cell_nodes[node['hex_id']].add(node['rx_idx'])
         
-        # Add edges with their attributes
-        for u, v, data in nx_graph.edges(data=True):
-            self.G.add_edge(node_mapping[u], node_mapping[v], data['length'])
+        self.cell_anchor_nodes = {cell: next(iter(nodes)) for cell, nodes in self.cell_nodes.items()}
+        self.cell_pairs = np.array([(x, y) for x in self.unique_cells for y in self.unique_cells if x != y])
+        self.cell_pair_indices = np.array([(self.cell_anchor_nodes[x], self.cell_anchor_nodes[y]) for x, y in self.cell_pairs])
+
+        self.tuning_factor = tuning_factor # for parallel precompute
+        if self.radius_miles >= 6:
+            if parallel_precompute is not False:
+                # Parallel precompute
+                self.path_cache = self._precompute_shortest_cell_paths_parallel()
+            else:
+                # Single-threaded precompute
+                self.path_cache = self._precompute_shortest_cell_paths()
+        else: self.path_cache = self._precompute_shortest_cell_paths()
         
-        # Cache for paths between H3 cells
-        self.path_cache: Dict[Tuple[str, str], Tuple[List, float]] = {}
+        self.hex_path_cache = self._path_cache_rx_to_hex()
         
         # Cache for interpolated paths
         self.interpolation_cache: Dict[str, List[Location]] = {}
+    
+    def _populate_G_rx(self):
+        start = time.time()
+        # Fill node_mapping array with node information
+        for i, (nx_id, data) in enumerate(self.G_nx_nodes):
+            lat, lon = data['y'], data['x']
+            hex_id = h3.latlng_to_cell(lat, lon, 9)
+            rx_idx = self.G_rx.add_node(i) # store node data in G_rx
+            
+            self.node_mapping[i] = (nx_id, lon, lat, hex_id, rx_idx)
         
-        # Create H3 cell to node mapping
-        self.cell_nodes: Dict[str, Set[int]] = {}
+        # Add edges with their attributes
+        for u, v, data in self.G_nx.edges(data=True):
+            # Use searchsorted for efficient index lookup
+            u_mask = self.node_mapping['nx_id'] == u
+            v_mask = self.node_mapping['nx_id'] == v
+            u_idx = self.node_mapping['rx_idx'][u_mask][0]
+            v_idx = self.node_mapping['rx_idx'][v_mask][0]
+            weight = data.get('length', 1.0)
+            self.G_rx.add_edge(u_idx, v_idx, weight)
+        print(f"Population of G_rx with {len(self.G_rx.nodes())} nodes and {len(self.G_rx.edges())} edges completed in {time.time() - start} seconds.")
+
+    def compute_shortest_path(self, origin_rx_idx, dest_rx_idx):
+        """Compute shortest path between origin and destination nodes."""
+        path_dict = dict(rx.dijkstra_shortest_paths(self.G_rx, source=origin_rx_idx, target=dest_rx_idx, weight_fn=lambda x: float(x)))
         
-        # Store node coordinates as numpy arrays for efficient operations
-        self.node_ids = np.array(list(range(self.G.num_nodes())))
-        self.node_coords = np.array([self.G.get_node_data(i) for i in range(self.G.num_nodes())])
+        if dest_rx_idx in path_dict:
+            path_to_dest = np.array(path_dict[dest_rx_idx])
+            distance = sum(
+                self.G_rx.get_edge_data(path_to_dest[i], path_to_dest[i + 1])
+                for i in range(len(path_to_dest) - 1)
+            )
+            return (origin_rx_idx, dest_rx_idx), {'path': path_to_dest, 'distance': distance}
         
-        # Create a coordinate lookup array for quick access
-        self.node_index_to_coords = self.node_coords.copy()
-        
-        # Create H3 cell mapping
-        for i in range(self.G.num_nodes()):
-            coords = self.node_coords[i]
-            cell = h3.latlng_to_cell(coords[0], coords[1], 7)
-            if str(cell) not in self.cell_nodes:
-                self.cell_nodes[str(cell)] = set()
-            self.cell_nodes[str(cell)].add(i)
-        
-        # Store nodelist as an instance variable
-        self.nodelist = list(range(self.G.num_nodes()))
+        return None  # No valid path
+    def _precompute_shortest_cell_paths(self):
+        start = time.time()
+        path_cache = {}
+        processed_pairs = set()
+
+        for origin, dest in self.cell_pair_indices:
+            if (origin, dest) not in processed_pairs:
+                result = self.compute_shortest_path(origin, dest)
+                if result is not None:
+                    (origin, dest), path_data = result
+
+                    # Store forward and reverse paths
+                    path_cache[(origin, dest)] = path_data
+                    path_cache[(dest, origin)] = {'path': path_data['path'][::-1], 'distance': path_data['distance']}
+
+                    processed_pairs.add((origin, dest))
+                    processed_pairs.add((dest, origin))
+
+        print(f"Single-threaded precomputation of {len(self.cell_pair_indices)} cell pairs completed in {time.time() - start} seconds.")
+        return path_cache
+    
+    def compute_batch_shortest_paths(self, batch):
+        """Compute multiple shortest paths in a batch to reduce multiprocessing overhead."""
+        batch_results = {}
+        for origin, dest in batch:
+            path_dict = dict(rx.dijkstra_shortest_paths(self.G_rx, source=origin, target=dest, weight_fn=lambda x: float(x)))
+            if dest in path_dict:
+                path_to_dest = np.array(path_dict[dest])
+                distance = sum(
+                    self.G_rx.get_edge_data(path_to_dest[i], path_to_dest[i + 1])
+                    for i in range(len(path_to_dest) - 1)
+                )
+                batch_results[(origin, dest)] = {'path': path_to_dest, 'distance': distance}
+                batch_results[(dest, origin)] = {'path': path_to_dest[::-1], 'distance': distance}
+        return batch_results
+    
+    def _precompute_shortest_cell_paths_parallel(self):
+        """
+        Uses multiprocessing to precompute shortest paths between anchor nodes in batches.
+        """
+        start = time.time()
+        path_cache = {}
+        num_cores = min(8, multiprocessing.cpu_count())  # Limit CPU usage to avoid excessive overhead
+
+        batch_size = int(round(len(self.cell_pair_indices) / (num_cores * self.tuning_factor), -3))
+        print(f"Beginning parallel precomputation with batch size {batch_size} for {len(self.cell_pair_indices)} cell pairs...")
+        # ✅ Directly use self.cell_pair_indices (already computed in __init__)
+        anchor_pairs = self.cell_pair_indices
+
+        # Break anchor pairs into batches
+        batches = [anchor_pairs[i:i + batch_size] for i in range(0, len(anchor_pairs), batch_size)]
+
+        # Run parallel execution across available CPU cores
+        results = Parallel(n_jobs=num_cores)(
+            delayed(self.compute_batch_shortest_paths)(batch) for batch in batches
+        )
+
+        # Merge results
+        for batch_result in results:
+            path_cache.update(batch_result)
+
+        print(f"Parallel precomputation of {len(self.cell_pair_indices)} cell pairs completed using {num_cores} cores with batch size {batch_size} in {time.time() - start:.2f} seconds.")
+        return path_cache
+
+    def _path_cache_rx_to_hex(self):
+        rx_to_hex = {node['rx_idx']: node['hex_id'] for node in self.node_mapping}
+        hex_path_cache = {}
+
+        for (origin_rx, dest_rx), entry in self.path_cache.items():
+            origin_hex, dest_hex = rx_to_hex[origin_rx], rx_to_hex[dest_rx]
+            hex_path_cache[(origin_hex, dest_hex)] = entry
+
+        return hex_path_cache
+
+    def rx_to_hex(self, rx_idx: int) -> str:
+        return self.node_mapping[self.node_mapping['rx_idx'] == rx_idx]['hex_id'][0]
+    
+    def nx_to_hex(self, nx_id: int) -> str:
+        return self.node_mapping[self.node_mapping['nx_id'] == nx_id]['hex_id'][0]
     
     @lru_cache(maxsize=1024)
     def _get_nearest_node(self, lat: float, lon: float, cell: str, exclude_node: int = None) -> int:
@@ -100,9 +219,9 @@ class RoadNetwork:
     
     def get_random_node_location(self) -> Location:
         """Get a random node location from the road network within service area."""
-        idx = np.random.randint(self.G.num_nodes())
-        coords = self.G.get_node_data(idx)
-        return Location(coords[0], coords[1])
+        idx = np.random.randint(self.G_rx.num_nodes())
+        coords = self.G_rx.get_node_data(idx)
+        return coords
     
     def get_path_coordinates(self, path: List) -> List[Location]:
         """Convert path nodes to list of locations using vectorized operations."""
@@ -115,31 +234,57 @@ class RoadNetwork:
         # Convert to list of Locations
         return [Location(lat, lon) for lat, lon in path_coords]
     
-    def get_path(self, start_cell: str, end_cell: str) -> Tuple[List, float]:
-        """Retrieve or calculate the path between two H3 cells."""
-        if (start_cell, end_cell) in self.path_cache:
-            return self.path_cache[(start_cell, end_cell)]
-        
-        # Get a random node from each cell as representative points
-        start_nodes = list(self.cell_nodes.get(start_cell, set()))
-        end_nodes = list(self.cell_nodes.get(end_cell, set()))
-        
-        if not start_nodes or not end_nodes:
-            return None, 0
-        
-        # Use the first node in each cell (they're close enough for our purposes)
-        start_node = start_nodes[0]
-        end_node = end_nodes[0]
-        
-        # Use rustworkx's Dijkstra algorithm
-        path = rx.dijkstra_path(self.G, start_node, end_node, weight_fn=lambda x: float(x))
-        
-        # Calculate total distance in miles
-        distance = sum(self.G.get_edge_data(path[i], path[i+1]) for i in range(len(path)-1)) / 1609.34
-        
-        # Cache the result
-        self.path_cache[(start_cell, end_cell)] = (path, distance)
-        return path, distance
+    def get_path(self, origin_lat: float, origin_lon: float, dest_lat: float, dest_lon: float) -> Tuple[np.ndarray, float]:
+        """Retrieve the path and distance between two points, leveraging precomputed caches."""
+        # Determine H3 cells and nearest nodes
+        origin_cell = h3.latlng_to_cell(origin_lat, origin_lon, 9)
+        dest_cell = h3.latlng_to_cell(dest_lat, dest_lon, 9)
+
+        origin_node = self._get_nearest_node(origin_lat, origin_lon, origin_cell)
+        dest_node = self._get_nearest_node(dest_lat, dest_lon, dest_cell)
+
+        # 1. If origin and destination are the same node
+        if origin_node == dest_node:
+            return np.array([origin_node]), 0.0
+
+        # 2. If origin and destination are in the same H3 cell, try a short path (<= 4 segments)
+        if origin_cell == dest_cell:
+            try:
+                path_dict = rx.dijkstra_shortest_paths(
+                    self.G_rx, source=origin_node, target=dest_node, weight_fn=lambda x: float(x)
+                )
+                path = np.array(path_dict[dest_node])
+                if len(path) <= 5:  # 4 segments = 5 nodes
+                    distance = sum(self.G_rx.get_edge_data(path[i], path[i + 1]) for i in range(len(path) - 1))
+                    return path, distance
+            except KeyError:
+                pass  # No valid short path, fallback below
+
+        # 3. Check precomputed hex_path_cache for cell-to-cell path
+        cell_pair = (origin_cell, dest_cell)
+        cache_match = self.hex_path_cache[self.hex_path_cache['pair'] == cell_pair]
+        if cache_match.size > 0:
+            precomputed_path = cache_match[0]['path']
+            precomputed_distance = cache_match[0]['distance']
+
+            # Optional: Stitch paths from precomputed anchor nodes to nearest nodes
+            anchor_origin = self.cell_anchor_nodes[origin_cell]
+            anchor_dest = self.cell_anchor_nodes[dest_cell]
+
+            # Path from origin_node -> anchor_origin
+            origin_to_anchor_path, origin_to_anchor_dist = self._dijkstra_path(origin_node, anchor_origin)
+
+            # Path from anchor_dest -> dest_node
+            anchor_to_dest_path, anchor_to_dest_dist = self._dijkstra_path(anchor_dest, dest_node)
+
+            # Combine paths
+            full_path = np.concatenate([origin_to_anchor_path[:-1], precomputed_path, anchor_to_dest_path[1:]])
+            full_distance = origin_to_anchor_dist + precomputed_distance + anchor_to_dest_dist
+
+            return full_path, full_distance
+
+        # 4. Full Dijkstra path search as a fallback (origin_node -> dest_node)
+        return self._dijkstra_path(origin_node, dest_node)
     
     def interpolate_path(self, path: List) -> List[Location]:
         """Interpolate points along a path using Numba-optimized function."""
