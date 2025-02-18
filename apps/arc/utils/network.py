@@ -13,6 +13,8 @@ import scipy.sparse as sp
 import multiprocessing
 from joblib import Parallel, delayed
 import time
+from scipy.spatial.distance import cdist
+from shapely.geometry import LineString
 
 class RoadNetwork:
     def __init__(self, center: Location, radius_miles: float, parallel_precompute: bool = False, tuning_factor: float = 6.0):
@@ -53,7 +55,9 @@ class RoadNetwork:
         self.cell_pairs = np.array([(x, y) for x in self.unique_cells for y in self.unique_cells if x != y])
         self.cell_pair_indices = np.array([(self.cell_anchor_nodes[x], self.cell_anchor_nodes[y]) for x, y in self.cell_pairs])
 
+        # Parallel precompute decision tree
         self.tuning_factor = tuning_factor # for parallel precompute
+        ## Initial testing indicates parallel precompute is only beneficial for radius >= 6 (100,000+ pairs)
         if self.radius_miles >= 6:
             if parallel_precompute is not False:
                 # Parallel precompute
@@ -86,22 +90,50 @@ class RoadNetwork:
             u_idx = self.node_mapping['rx_idx'][u_mask][0]
             v_idx = self.node_mapping['rx_idx'][v_mask][0]
             weight = data.get('length', 1.0)
-            self.G_rx.add_edge(u_idx, v_idx, weight)
+
+            # Preserve road geometry if available
+            road_geometry = data.get('geometry', None)
+            if road_geometry is None:
+                # If no geometry, create a straight-line path
+                u_coords = np.array((self.G_nx.nodes[u]['y'], self.G_nx.nodes[u]['x']))
+                v_coords = np.array((self.G_nx.nodes[v]['y'], self.G_nx.nodes[v]['x']))
+                road_geometry = LineString([u_coords, v_coords])  # Create simple line
+
+            # Add edge with geometry stored
+            self.G_rx.add_edge(u_idx, v_idx, (weight, road_geometry))
         print(f"Population of G_rx with {len(self.G_rx.nodes())} nodes and {len(self.G_rx.edges())} edges completed in {time.time() - start} seconds.")
 
     def compute_shortest_path(self, origin_rx_idx, dest_rx_idx):
-        """Compute shortest path between origin and destination nodes."""
-        path_dict = dict(rx.dijkstra_shortest_paths(self.G_rx, source=origin_rx_idx, target=dest_rx_idx, weight_fn=lambda x: float(x)))
+        """Compute shortest path between origin and destination nodes and return path, distance, and geometry."""
         
+        path_dict = dict(rx.dijkstra_shortest_paths(
+            self.G_rx,
+            source=origin_rx_idx,
+            target=dest_rx_idx,
+            weight_fn=lambda x: float(x[0])  # ✅ Extract weight only
+        ))
+
         if dest_rx_idx in path_dict:
-            path_to_dest = np.array(path_dict[dest_rx_idx])
-            distance = sum(
-                self.G_rx.get_edge_data(path_to_dest[i], path_to_dest[i + 1])
-                for i in range(len(path_to_dest) - 1)
-            )
-            return (origin_rx_idx, dest_rx_idx), {'path': path_to_dest, 'distance': distance}
-        
+            path_to_dest = np.array(path_dict[dest_rx_idx])  # ✅ Extract path sequence
+            distance = 0
+            geometries = []
+
+            # Iterate through path edges to sum distances and collect geometries
+            for i in range(len(path_to_dest) - 1):
+                edge_data = self.G_rx.get_edge_data(path_to_dest[i], path_to_dest[i + 1])
+                edge_weight, edge_geometry = edge_data  # ✅ Extract weight & geometry
+                
+                distance += edge_weight  # ✅ Sum total path distance
+                if isinstance(edge_geometry, LineString):
+                    geometries.append(edge_geometry)  # ✅ Store road segment geometry
+
+            # ✅ Combine individual segments into a single LineString
+            full_geometry = LineString([coord for geom in geometries for coord in geom.coords])
+
+            return (origin_rx_idx, dest_rx_idx), {'path': path_to_dest, 'distance': distance, 'geometry': full_geometry}
+
         return None  # No valid path
+
     def _precompute_shortest_cell_paths(self):
         start = time.time()
         path_cache = {}
@@ -112,30 +144,44 @@ class RoadNetwork:
                 result = self.compute_shortest_path(origin, dest)
                 if result is not None:
                     (origin, dest), path_data = result
-
-                    # Store forward and reverse paths
-                    path_cache[(origin, dest)] = path_data
-                    path_cache[(dest, origin)] = {'path': path_data['path'][::-1], 'distance': path_data['distance']}
-
                     processed_pairs.add((origin, dest))
-                    processed_pairs.add((dest, origin))
 
         print(f"Single-threaded precomputation of {len(self.cell_pair_indices)} cell pairs completed in {time.time() - start} seconds.")
         return path_cache
     
     def compute_batch_shortest_paths(self, batch):
-        """Compute multiple shortest paths in a batch to reduce multiprocessing overhead."""
+        """Compute multiple shortest paths in a batch, including full geometries."""
+        
         batch_results = {}
+
         for origin, dest in batch:
-            path_dict = dict(rx.dijkstra_shortest_paths(self.G_rx, source=origin, target=dest, weight_fn=lambda x: float(x)))
+            path_dict = dict(rx.dijkstra_shortest_paths(
+                self.G_rx,
+                source=origin,
+                target=dest,
+                weight_fn=lambda x: float(x[0])  # ✅ Extract weight only
+            ))
+
             if dest in path_dict:
-                path_to_dest = np.array(path_dict[dest])
-                distance = sum(
-                    self.G_rx.get_edge_data(path_to_dest[i], path_to_dest[i + 1])
-                    for i in range(len(path_to_dest) - 1)
-                )
-                batch_results[(origin, dest)] = {'path': path_to_dest, 'distance': distance}
-                batch_results[(dest, origin)] = {'path': path_to_dest[::-1], 'distance': distance}
+                path_to_dest = np.array(path_dict[dest])  # ✅ Extract path sequence
+                distance = 0
+                geometries = []
+
+                # ✅ Collect path segment distances and geometries
+                for i in range(len(path_to_dest) - 1):
+                    edge_data = self.G_rx.get_edge_data(path_to_dest[i], path_to_dest[i + 1])
+                    edge_weight, edge_geometry = edge_data  # ✅ Extract weight & geometry
+                    
+                    distance += edge_weight  # ✅ Sum total path distance
+                    if isinstance(edge_geometry, LineString):
+                        geometries.append(edge_geometry)  # ✅ Store road segment geometry
+
+                # ✅ Merge all geometries into one LineString
+                full_geometry = LineString([coord for geom in geometries for coord in geom.coords])
+
+                # ✅ Store path results in batch
+                batch_results[(origin, dest)] = {'path': path_to_dest, 'distance': distance, 'geometry': full_geometry}
+
         return batch_results
     
     def _precompute_shortest_cell_paths_parallel(self):
@@ -182,34 +228,53 @@ class RoadNetwork:
     def nx_to_hex(self, nx_id: int) -> str:
         return self.node_mapping[self.node_mapping['nx_id'] == nx_id]['hex_id'][0]
     
+    def get_node_attributes(self, selector: str, lookup_value: object, attribute: str):
+        return self.node_mapping[self.node_mapping[selector] == lookup_value][attribute][0]
+
     @lru_cache(maxsize=1024)
-    def _get_nearest_node(self, lat: float, lon: float, cell: str, exclude_node: int = None) -> int:
-        """Get nearest node to a location, using H3 cell for initial filtering, with an option to exclude a node."""
+    def _get_nearest_node(self, lat: float, lon: float, exclude_node: int = None) -> int:
+        """
+        Get the nearest node to a location, using H3 cell for initial filtering if possible.
+        Falls back to checking all nodes with vectorized haversine distance calculation.
+        """
+        cell = h3.latlng_to_cell(lat, lon, 9)
+
+        # Convert input lat/lon into a NumPy array for vectorized operations
+        input_coords = np.array([[lat, lon]])
+
         if cell in self.cell_nodes:
-            # First check nodes in the same cell using vectorized operations
-            cell_nodes = np.array(list(self.cell_nodes[cell]))
+            # Get nodes in the same hex cell
+            nodes_in_cell = np.array(list(self.cell_nodes[cell]))
+
             if exclude_node is not None:
-                cell_nodes = cell_nodes[cell_nodes != exclude_node]
-            
-            if len(cell_nodes) > 0:
-                # Get coordinates for cell nodes
-                cell_coords = np.array([self.G.get_node_data(node) for node in cell_nodes])
-                
-                # Vectorized distance calculation
-                dists = np.sum((cell_coords - np.array([lat, lon])) ** 2, axis=1)
+                nodes_in_cell = nodes_in_cell[nodes_in_cell != exclude_node]
+
+            if len(nodes_in_cell) > 0:
+                # Retrieve corresponding lat/lon values from node_mapping
+                cell_coords = np.column_stack((
+                    self.node_mapping['lat'][nodes_in_cell],
+                    self.node_mapping['lon'][nodes_in_cell]
+                ))
+
+                # Compute haversine distances in a vectorized manner
+                dists = cdist(input_coords, cell_coords, metric='euclidean')[0]
                 nearest_idx = np.argmin(dists)
-                return cell_nodes[nearest_idx]
-        
-        # Fallback to checking all nodes
-        all_coords = np.array([self.G.get_node_data(i) for i in range(self.G.num_nodes())])
+                return nodes_in_cell[nearest_idx]
+
+        # Fallback: Compute distance across all nodes
+        all_nodes = self.node_mapping['rx_idx']
+
         if exclude_node is not None:
-            mask = np.ones(len(all_coords), dtype=bool)
-            mask[exclude_node] = False
-            all_coords = all_coords[mask]
+            all_nodes = all_nodes[all_nodes != exclude_node]
+
+        all_coords = np.column_stack((self.node_mapping['lat'][all_nodes], self.node_mapping['lon'][all_nodes]))
         
-        dists = np.sum((all_coords - np.array([lat, lon])) ** 2, axis=1)
+        # Compute haversine distances in a vectorized manner
+        dists = cdist(input_coords, all_coords, metric='euclidean')[0]
         nearest_idx = np.argmin(dists)
-        return nearest_idx if exclude_node is None else nearest_idx + (nearest_idx >= exclude_node)
+        distance = dists[nearest_idx]
+
+        return (all_nodes[nearest_idx], distance)
     
     def snap_to_node(self, location: Location) -> Location:
         """Snap a location to the nearest node in the road network."""
@@ -222,105 +287,6 @@ class RoadNetwork:
         idx = np.random.randint(self.G_rx.num_nodes())
         coords = self.G_rx.get_node_data(idx)
         return coords
-    
-    def get_path_coordinates(self, path: List) -> List[Location]:
-        """Convert path nodes to list of locations using vectorized operations."""
-        if not path:
-            return []
-        
-        # Get coordinates directly from node data
-        path_coords = np.array([self.G.get_node_data(node) for node in path])
-        
-        # Convert to list of Locations
-        return [Location(lat, lon) for lat, lon in path_coords]
-    
-    def get_path(self, origin_lat: float, origin_lon: float, dest_lat: float, dest_lon: float) -> Tuple[np.ndarray, float]:
-        """Retrieve the path and distance between two points, leveraging precomputed caches."""
-        # Determine H3 cells and nearest nodes
-        origin_cell = h3.latlng_to_cell(origin_lat, origin_lon, 9)
-        dest_cell = h3.latlng_to_cell(dest_lat, dest_lon, 9)
-
-        origin_node = self._get_nearest_node(origin_lat, origin_lon, origin_cell)
-        dest_node = self._get_nearest_node(dest_lat, dest_lon, dest_cell)
-
-        # 1. If origin and destination are the same node
-        if origin_node == dest_node:
-            return np.array([origin_node]), 0.0
-
-        # 2. If origin and destination are in the same H3 cell, try a short path (<= 4 segments)
-        if origin_cell == dest_cell:
-            try:
-                path_dict = rx.dijkstra_shortest_paths(
-                    self.G_rx, source=origin_node, target=dest_node, weight_fn=lambda x: float(x)
-                )
-                path = np.array(path_dict[dest_node])
-                if len(path) <= 5:  # 4 segments = 5 nodes
-                    distance = sum(self.G_rx.get_edge_data(path[i], path[i + 1]) for i in range(len(path) - 1))
-                    return path, distance
-            except KeyError:
-                pass  # No valid short path, fallback below
-
-        # 3. Check precomputed hex_path_cache for cell-to-cell path
-        cell_pair = (origin_cell, dest_cell)
-        cache_match = self.hex_path_cache[self.hex_path_cache['pair'] == cell_pair]
-        if cache_match.size > 0:
-            precomputed_path = cache_match[0]['path']
-            precomputed_distance = cache_match[0]['distance']
-
-            # Optional: Stitch paths from precomputed anchor nodes to nearest nodes
-            anchor_origin = self.cell_anchor_nodes[origin_cell]
-            anchor_dest = self.cell_anchor_nodes[dest_cell]
-
-            # Path from origin_node -> anchor_origin
-            origin_to_anchor_path, origin_to_anchor_dist = self._dijkstra_path(origin_node, anchor_origin)
-
-            # Path from anchor_dest -> dest_node
-            anchor_to_dest_path, anchor_to_dest_dist = self._dijkstra_path(anchor_dest, dest_node)
-
-            # Combine paths
-            full_path = np.concatenate([origin_to_anchor_path[:-1], precomputed_path, anchor_to_dest_path[1:]])
-            full_distance = origin_to_anchor_dist + precomputed_distance + anchor_to_dest_dist
-
-            return full_path, full_distance
-
-        # 4. Full Dijkstra path search as a fallback (origin_node -> dest_node)
-        return self._dijkstra_path(origin_node, dest_node)
-    
-    def interpolate_path(self, path: List) -> List[Location]:
-        """Interpolate points along a path using Numba-optimized function."""
-        if not path or len(path) < 2:
-            return []
-        
-        # Check cache first
-        path_key = '-'.join(map(str, path))
-        if path_key in self.interpolation_cache:
-            return self.interpolation_cache[path_key]
-        
-        # Get coordinates for all nodes in path
-        coords = np.array([self.G.get_node_data(i) for i in path])
-        
-        # Calculate total distance with safe edge weight access
-        total_distance = sum(self._get_edge_weight(path[i], path[i+1]) for i in range(len(path)-1))
-        num_points = min(50, max(10, int(total_distance / 200)))
-        
-        # Use Numba-optimized interpolation
-        interpolated_coords = interpolate_path_numba(coords, num_points)
-        
-        points = [Location(lat, lon) for lat, lon in interpolated_coords]
-        
-        # Cache the result
-        self.interpolation_cache[path_key] = points
-        return points
-    
-    def _convert_graph_to_sparse_matrix(self):
-        """Convert the rustworkx graph to a sparse matrix."""
-        # Get the adjacency matrix in sparse format
-        adjacency_matrix = rx.adjacency_matrix(self.G, weight_fn=lambda x: float(x))
-        
-        # Create a mapping from node IDs to indices (already 0-based in rustworkx)
-        self.node_id_to_index = {i: i for i in range(self.G.num_nodes())}
-        
-        return adjacency_matrix
 
     def get_shortest_path(self, start: Location, end: Location) -> Tuple[List, float]:
         """Get shortest path between two locations using rustworkx's Dijkstra algorithm."""
@@ -345,36 +311,43 @@ class RoadNetwork:
         except Exception as e:
             print(f"Error finding path: {e}")
             return None, 0
-    
-    def _get_path_key(self, path: List[int]) -> str:
-        """Generate a unique key for a path for caching."""
-        return '-'.join(map(str, path)) 
 
     def get_network_polygon(self) -> dict:
-        """Generate a GeoJSON representation of the network graph as LineString features."""
+        """Generate a GeoJSON representation of the network graph using precomputed edge geometries."""
         features = []
-        
-        # Get all edges as (source, target, weight) tuples
-        for start_node, end_node in self.G.edge_list():
-            start_coords = self.G.get_node_data(start_node)
-            end_coords = self.G.get_node_data(end_node)
-            
-            # Create a LineString feature for each edge
-            feature = {
+
+        # Zip edge_list() with edges() to get (origin, dest, (weight, geometry))
+        for (origin, dest), (edge_data) in zip(self.G_rx.edge_list(), self.G_rx.edges()):
+            weight, geometry = edge_data  # ✅ Unpack weight & geometry
+
+            if isinstance(geometry, LineString):  # ✅ Ensure valid geometry
+                coordinates = list(geometry.coords)  # Extract full road shape
+            else:
+                # Fallback: reconstruct from node locations
+                origin_lat = self.get_node_attributes(selector='rx_idx', lookup_value=origin, attribute='lat')
+                origin_lon = self.get_node_attributes(selector='rx_idx', lookup_value=origin, attribute='lon')
+                dest_lat = self.get_node_attributes(selector='rx_idx', lookup_value=dest, attribute='lat')
+                dest_lon = self.get_node_attributes(selector='rx_idx', lookup_value=dest, attribute='lon')
+                coordinates = [[origin_lon, origin_lat], [dest_lon, dest_lat]]
+
+            # Create GeoJSON feature
+            features.append({
                 "type": "Feature",
                 "geometry": {
                     "type": "LineString",
-                    "coordinates": [[start_coords[1], start_coords[0]], [end_coords[1], end_coords[0]]]  # [lon, lat] format for GeoJSON
+                    "coordinates": coordinates
+                },
+                "properties": {
+                    "length": weight  # ✅ Include road length
                 }
-            }
-            features.append(feature)
-        
-        # Create GeoJSON FeatureCollection
+            })
+
+        # Construct final GeoJSON object
         geojson = {
             "type": "FeatureCollection",
             "features": features
         }
-        
+
         return geojson
 
     def save_network_polygon(self, output_dir: str):
@@ -394,11 +367,3 @@ class RoadNetwork:
             json.dump(geojson_network, f, indent=2)
         
         print(f"Network saved to {output_file}")
-
-    def _get_edge_weight(self, u: int, v: int) -> float:
-        """Safely get edge weight between two nodes."""
-        try:
-            weight = self.G.get_edge_data(u, v)
-            return float(weight) if weight is not None else float('inf')
-        except (KeyError, TypeError):
-            return float('inf') 
