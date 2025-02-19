@@ -31,13 +31,22 @@ export default function Bio() {
         {/* Text Content */}
         <div className="space-y-6 max-w-3xl">
           <p className="text-white/80 leading-relaxed">
-            Ryan is a founder and investor focused on infrastructure and autonomous systems. He leads <a href="https://edgerunner.io" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">Edgerunner Ventures</a>, investing in early-stage AI, robotics, and deep tech startups, and serves as a Venture Partner at <a href="https://shack15.ventures" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">SHACK15 Ventures</a>.
+            Ryan is a founder and investor focused on infrastructure and autonomous systems.
+            He leads <a href="https://edgerunner.io" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">Edgerunner Ventures</a>,
+            investing in early-stage AI, robotics, and deep tech startups, and
+            serves as a Venture Partner at <a href="https://shack15.ventures" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">SHACK15 Ventures</a>.
           </p>
           <p className="text-white/80 leading-relaxed">
-            Previously at <a href="https://aifund.ai" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">AI Fund</a> with Andrew Ng, he co-built and invested in 9 companies from zero to revenue. Notable launches include <a href="https://skyfireai.com" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">Skyfire</a>, <a href="https://workhelix.com" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">Workhelix</a>, and <a href="https://rapidfire.ai" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">Rapidfire</a>. At Uber, he led machine learning projects across micromobility, urban air mobility (patented model for eVTOL acoustics), and autonomous delivery networks. He also led product at Spiketrap (acquired by <a href="https://reddit.com" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">Reddit</a>), and executed technology M&A transactions at Credit Suisse.
+            Previously at <a href="https://aifund.ai" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">AI Fund</a> with Andrew Ng,
+            he co-built and invested in 9 companies from zero to revenue. Notable launches include <a href="https://skyfireai.com" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">Skyfire AI</a>, a swarm intelligence platform for autonomous drones,
+            and <a href="https://workhelix.com" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">Workhelix</a>, a GenAI workforce transformation company co-founded by Erik Brynjolfsson.
           </p>
           <p className="text-white/80 leading-relaxed">
-            He holds a BS in Finance from Georgetown University, with a minor in Economics. Outside of work, he is an active endurance athlete, Krav Maga practitioner, and homelab enthusiast. He shares technical and business insights at <a href="https://machineyearning.io" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">machineyearning.io</a>.
+            At Uber, he led machine learning projects across micromobility, aerial ridesharing, and autonomous delivery networks.
+            He also led product at Spiketrap (acquired by <a href="https://reddit.com" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">Reddit</a>), and executed technology M&A transactions at Credit Suisse.
+          </p>
+          <p className="text-white/80 leading-relaxed">
+            He holds a BS in Finance from Georgetown University, with a minor in Economics. Outside of work, he is an avid Spartan Racer, martial arts practitioner, and tinkerer. He shares technical and business insights at <a href="https://machineyearning.io" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">machineyearning.io</a>.
           </p>
 
           {/* Social Links */}

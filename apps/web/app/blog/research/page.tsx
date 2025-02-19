@@ -52,7 +52,7 @@ export default function Research() {
         { label: "Demo", url: "#" },
         { label: "GitHub", url: "#" }
       ]
-    },
+    }/*,
     {
       name: "SHACK15 VENTURES",
       description: "The official angel fund of the SHACK15 community, investing in early-stage AI & deep tech startups.",
@@ -63,7 +63,7 @@ export default function Research() {
         { label: "Live Site", url: "#" },
         { label: "GitHub", url: "#" }
       ]
-    }/*,
+    },
     {
       name: "MIKOSHI HOMELAB",
       description: "Franken-lab for self-hosted AI, cloud, and media projects. Built w/ unRAID on Supermicro, Synology, NVIDIA, RPi.",
