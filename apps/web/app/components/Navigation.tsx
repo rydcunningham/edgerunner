@@ -71,14 +71,6 @@ export default function Navigation() {
           </li>
           <li>
             <Link 
-              href="/work" 
-              className={`text-lg uppercase tracking-wider ${pathname === '/work' ? 'text-[#5EF6FF] border-b border-[#5EF6FF] pb-1' : 'text-white/30 hover:text-[#F75049]'}`}
-            >
-              Work
-            </Link>
-          </li>
-          <li>
-            <Link 
               href="/portfolio" 
               className={`text-lg uppercase tracking-wider ${pathname === '/portfolio' ? 'text-[#5EF6FF] border-b border-[#5EF6FF] pb-1' : 'text-white/30 hover:text-[#F75049]'}`}
             >
@@ -88,7 +80,7 @@ export default function Navigation() {
           <li>
             <Link 
               href="/blog" 
-              className={`text-lg uppercase tracking-wider ${pathname === '/blog' ? 'text-[#5EF6FF] border-b border-[#5EF6FF] pb-1' : 'text-white/30 hover:text-[#F75049]'}`}
+              className={`text-lg uppercase tracking-wider ${pathname.startsWith('/blog') ? 'text-[#5EF6FF] border-b border-[#5EF6FF] pb-1' : 'text-white/30 hover:text-[#F75049]'}`}
             >
               Machine Yearning
             </Link>
@@ -116,14 +108,6 @@ export default function Navigation() {
         </li>
         <li>
           <Link 
-            href="/work" 
-            className={`text-sm uppercase tracking-wider ${pathname === '/work' ? 'text-[#5EF6FF] border-b border-[#5EF6FF] pb-1' : 'text-white/30 hover:text-[#F75049]'}`}
-          >
-            Work
-          </Link>
-        </li>
-        <li>
-          <Link 
             href="/portfolio" 
             className={`text-sm uppercase tracking-wider ${pathname === '/portfolio' ? 'text-[#5EF6FF] border-b border-[#5EF6FF] pb-1' : 'text-white/30 hover:text-[#F75049]'}`}
           >
@@ -133,7 +117,7 @@ export default function Navigation() {
         <li>
           <Link 
             href="/blog" 
-            className={`text-sm uppercase tracking-wider ${pathname === '/blog' ? 'text-[#5EF6FF] border-b border-[#5EF6FF] pb-1' : 'text-white/30 hover:text-[#F75049]'}`}
+            className={`text-sm uppercase tracking-wider ${pathname.startsWith('/blog') ? 'text-[#5EF6FF] border-b border-[#5EF6FF] pb-1' : 'text-white/30 hover:text-[#F75049]'}`}
           >
             Machine Yearning
           </Link>

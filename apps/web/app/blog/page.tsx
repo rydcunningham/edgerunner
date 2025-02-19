@@ -47,21 +47,37 @@ export default function Blog() {
       {/* Fixed Header Content */}
       <div className="fixed top-24 left-24 right-24 z-40">
         <h2 className="text-white/90 text-2xl font-medium mb-4">Machine Yearning</h2>
-        <p className="text-white/50">
-          Subscribe via{' '}
-          <a 
-            href="https://machineyearning.substack.com" 
-            className="text-white/50 hover:text-[#F75049] transition-colors"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Substack →
-          </a>
-        </p>
+        <div className="space-y-4">
+          <p className="text-white/90">
+            writings and research, from lab to market.{' '}
+            <a 
+              href="https://machineyearning.substack.com" 
+              className="text-white/50 hover:text-[#F75049] transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              subscribe via Substack →
+            </a>
+          </p>
+          <div className="flex gap-4">
+            <Link
+              href="/blog"
+              className="text-[#F75049] text-sm uppercase tracking-wider transition-colors"
+            >
+              [BLOG]
+            </Link>
+            <Link
+              href="/blog/research"
+              className="text-white/60 hover:text-[#F75049] text-sm uppercase tracking-wider transition-colors"
+            >
+              [RESEARCH]
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Scrollable Posts */}
-      <div className="mt-56 px-24 space-y-12">
+      <div className="mt-72 px-24 space-y-12">
         {posts.map((post) => (
           <article key={post.slug} className="group">
             <Link href={`/blog/${post.slug}`} className="block space-y-3">

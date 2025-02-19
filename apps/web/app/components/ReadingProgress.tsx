@@ -6,7 +6,9 @@ import { usePathname } from 'next/navigation'
 export default function ReadingProgress() {
   const [progress, setProgress] = useState(0)
   const pathname = usePathname()
-  const isBlogPost = pathname.startsWith('/blog/') && pathname !== '/blog'
+  const isBlogPost = pathname.startsWith('/blog/') && 
+                    pathname !== '/blog' && 
+                    !pathname.startsWith('/blog/research')
 
   useEffect(() => {
     if (!isBlogPost) return

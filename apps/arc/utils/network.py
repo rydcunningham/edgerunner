@@ -14,7 +14,8 @@ import multiprocessing
 from joblib import Parallel, delayed
 import time
 from scipy.spatial.distance import cdist
-from shapely.geometry import LineString
+from shapely.geometry import Point, LineString
+import pandas as pd
 
 class RoadNetwork:
     def __init__(self, center: Location, radius_miles: float, parallel_precompute: bool = False, tuning_factor: float = 6.0):
@@ -75,10 +76,11 @@ class RoadNetwork:
     def _populate_G_rx(self):
         start = time.time()
         # Fill node_mapping array with node information
-        for i, (nx_id, data) in enumerate(self.G_nx_nodes):
+        for i, (nx_id, data) in enumerate(self.G_nx.nodes(data=True)):
             lat, lon = data['y'], data['x']
             hex_id = h3.latlng_to_cell(lat, lon, 9)
-            rx_idx = self.G_rx.add_node(i) # store node data in G_rx
+            rx_node = (lon, lat, hex_id)
+            rx_idx = self.G_rx.add_node(rx_node) # store node data in G_rx
             
             self.node_mapping[i] = (nx_id, lon, lat, hex_id, rx_idx)
         
@@ -103,6 +105,24 @@ class RoadNetwork:
             self.G_rx.add_edge(u_idx, v_idx, (weight, road_geometry))
         print(f"Population of G_rx with {len(self.G_rx.nodes())} nodes and {len(self.G_rx.edges())} edges completed in {time.time() - start} seconds.")
 
+    def get_node_attributes(self, selector: str, lookup_value: object, attribute: str):
+        return self.node_mapping[self.node_mapping[selector] == lookup_value][attribute][0]
+    
+    def rx_to_hex(self, rx_idx: int):
+        return self.get_node_attributes(selector='rx_idx', lookup_value=rx_idx, attribute='hex_id')
+    
+    def nx_to_hex(self, nx_id: int):
+        return self.get_node_attributes(selector='nx_id', lookup_value=nx_id, attribute='hex_id')
+    
+    def _path_cache_rx_to_hex(self):
+        """
+        Convert the path cache from rx_idx to hex_id.
+        """
+        return {(self.rx_to_hex(origin), self.rx_to_hex(dest)): path_data for (origin, dest), path_data in self.path_cache.items()}
+    
+    """
+    Pathfinding functions, for single-threaded and parallel precompute.
+    """
     def compute_shortest_path(self, origin_rx_idx, dest_rx_idx):
         """Compute shortest path between origin and destination nodes and return path, distance, and geometry."""
         
@@ -212,25 +232,10 @@ class RoadNetwork:
         print(f"Parallel precomputation of {len(self.cell_pair_indices)} cell pairs completed using {num_cores} cores with batch size {batch_size} in {time.time() - start:.2f} seconds.")
         return path_cache
 
-    def _path_cache_rx_to_hex(self):
-        rx_to_hex = {node['rx_idx']: node['hex_id'] for node in self.node_mapping}
-        hex_path_cache = {}
-
-        for (origin_rx, dest_rx), entry in self.path_cache.items():
-            origin_hex, dest_hex = rx_to_hex[origin_rx], rx_to_hex[dest_rx]
-            hex_path_cache[(origin_hex, dest_hex)] = entry
-
-        return hex_path_cache
-
-    def rx_to_hex(self, rx_idx: int) -> str:
-        return self.node_mapping[self.node_mapping['rx_idx'] == rx_idx]['hex_id'][0]
-    
-    def nx_to_hex(self, nx_id: int) -> str:
-        return self.node_mapping[self.node_mapping['nx_id'] == nx_id]['hex_id'][0]
-    
-    def get_node_attributes(self, selector: str, lookup_value: object, attribute: str):
-        return self.node_mapping[self.node_mapping[selector] == lookup_value][attribute][0]
-
+    """
+    Given a location, find the nearest node in the road network.
+    Useful for pathfinding when given a random location.
+    """
     @lru_cache(maxsize=1024)
     def _get_nearest_node(self, lat: float, lon: float, exclude_node: int = None) -> int:
         """
@@ -275,19 +280,48 @@ class RoadNetwork:
         distance = dists[nearest_idx]
 
         return (all_nodes[nearest_idx], distance)
-    
-    def snap_to_node(self, location: Location) -> Location:
-        """Snap a location to the nearest node in the road network."""
-        node = self._get_nearest_node(location.lat, location.lon, str(location.h3_cell))
-        coords = self.G.get_node_data(node)
-        return Location(coords[0], coords[1])
-    
-    def get_random_node_location(self) -> Location:
-        """Get a random node location from the road network within service area."""
-        idx = np.random.randint(self.G_rx.num_nodes())
-        coords = self.G_rx.get_node_data(idx)
-        return coords
 
+    def snap_to_nearest_road(self, lat: float, lon: float):
+        """
+        Snap a given location to the nearest road segment and return a new temporary node.
+        """
+        request_point = Point(lon, lat)  # Convert to Point for spatial operations
+        min_distance = float("inf")
+        snapped_point = None
+        snapped_edge = None
+        
+        for (origin, dest), (edge_data) in zip(self.G_rx.edge_list(), self.G_rx.edges()):
+            weight, geometry = edge_data  # ✅ Unpack weight & geometry
+
+            if isinstance(geometry, LineString):
+                # Project point onto the road segment
+                projected_point = geometry.interpolate(geometry.project(request_point))
+                distance = request_point.distance(projected_point)
+
+                # Keep track of the closest road segment
+                if distance < min_distance:
+                    min_distance = distance
+                    snapped_point = projected_point
+                    snapped_edge = (origin, dest, geometry, weight)
+
+        if snapped_point is None:
+            raise ValueError("No valid road segment found for snapping.")
+
+        # Add a new temporary node at the snapped location
+        new_node_cell = h3.latlng_to_cell(snapped_point.y, snapped_point.x, 9)
+        new_node = (snapped_point.x, snapped_point.y, new_node_cell)
+        new_node_idx = self.G_rx.add_node(new_node)
+        self.node_mapping[new_node_idx] = new_node
+
+        # Connect to the snapped road segment
+        origin, dest = snapped_edge
+        self.G_rx.add_edge(origin, new_node_idx, (min_distance, LineString([self.G_rx.get_node_data(origin), (snapped_point.y, snapped_point.x)])))
+        self.G_rx.add_edge(new_node_idx, dest, (min_distance, LineString([(snapped_point.y, snapped_point.x), self.G_rx.get_node_data(dest)])))
+
+        return new_node_idx  # Return the index of the new temporary node
+    """
+    Optimized pathfinding functions leveraging precomputed shortest paths
+    """
     def get_shortest_path(self, start: Location, end: Location) -> Tuple[List, float]:
         """Get shortest path between two locations using rustworkx's Dijkstra algorithm."""
         # Get nearest nodes
@@ -312,6 +346,20 @@ class RoadNetwork:
             print(f"Error finding path: {e}")
             return None, 0
 
+    """
+    Network visualization and geoJSON helper functions for deck.gl, kepler.gl, etc.
+    """
+    def export_network_nodes(self, output_dir: str) -> dict:
+        """Export the network nodes as a csv file."""
+        nodes_df = pd.DataFrame(self.node_mapping)
+        # Define the output file path in the kepler subfolder
+        kepler_dir = os.path.join(output_dir, 'kepler')
+        output_file = os.path.join(kepler_dir, 'nodes.csv')
+        
+        # Ensure the kepler directory exists
+        os.makedirs(kepler_dir, exist_ok=True)
+        nodes_df.to_csv(output_file, index=False)
+    
     def get_network_polygon(self) -> dict:
         """Generate a GeoJSON representation of the network graph using precomputed edge geometries."""
         features = []
