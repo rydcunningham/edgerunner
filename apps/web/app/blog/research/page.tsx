@@ -138,7 +138,7 @@ export default function Research() {
         <h2 className="text-white/90 text-2xl font-medium mb-4">Machine Yearning</h2>
         <div className="space-y-4">
           <p className="text-white/90">
-            open source projects and contributions.{' '}
+            deep-dives and open source projects.{' '}
             <a 
               href="https://github.com/rydcunningham" 
               className="text-white/50 hover:text-[#F75049] transition-colors"
@@ -234,22 +234,28 @@ export default function Research() {
                   </div>
 
                   {/* Right Column: Image */}
-                  <div className="max-w-[400px] relative justify-self-end">
-                    <Image 
+                  <div className="w-[400px] relative justify-self-end">
+                    <Image
                       src="/assets/grabber.svg"
-                      alt="Grabber"
+                      alt=""
                       width={20}
                       height={250}
-                      className="absolute -left-2.5 top-0 h-full w-auto"
+                      className="absolute -left-3.5 top-0 w-auto h-full"
                     />
-                    <div className="absolute inset-0 overflow-hidden" style={{ clipPath: 'polygon(0% 0%, 97% 0%, 100% 3%, 100% 97%, 97% 100%, 0% 100%)' }}>
-                      <Image 
-                        src={project.image}
-                        alt={project.name}
-                        width={400}
-                        height={250}
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="relative h-[250px]"> {/* Set explicit height to match grabber */}
+                      <div 
+                        className="h-full w-full overflow-hidden" 
+                        style={{
+                          clipPath: 'polygon(0% 0%, 97% 0%, 100% 3%, 100% 97%, 97% 100%, 0% 100%)'
+                        }}
+                      >
+                        <Image 
+                          src="/img/abstract_gray.avif"
+                          alt={project.name}
+                          className="w-full h-full object-cover"
+                          fill
+                        />
+                      </div>
                     </div>
                   </div>
                 </article>

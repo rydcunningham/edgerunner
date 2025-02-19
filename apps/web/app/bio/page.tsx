@@ -6,13 +6,14 @@ export default function Bio() {
       {/* Fixed Header Content */}
       <div className="fixed top-24 left-24 right-24 z-40">
         <h2 className="text-white/90 text-2xl font-medium mb-4">Bio</h2>
+        <div className="space-y-4">
         <p className="text-white/80">
           founder // investor{'. '}
           <a href="mailto:rc@edgerunner.io" className="text-white/80 hover:text-[#F75049] transition-colors">
             get in touch →
           </a>{' '}
         </p>
-        <div className="mt-2">
+        <div className="flex gap-4">
           <a
             href="/cv.pdf"
             target="_blank"
@@ -21,6 +22,7 @@ export default function Bio() {
           >
             [CV]
           </a>
+        </div>
         </div>
       </div>
 
