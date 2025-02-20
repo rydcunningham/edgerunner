@@ -19,7 +19,7 @@ export default function Page() {
                 </h1>
               </div>
               <p className="text-white/50 text-base">
-                lock in.
+                investing at the <span className="text-[#F75049] font-semibold">edge</span> of tomorrow.
               </p>
             </div>
           </div>
