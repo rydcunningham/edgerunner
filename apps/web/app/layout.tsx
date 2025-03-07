@@ -22,15 +22,12 @@ export const metadata = {
   openGraph: {
     title: 'Edgerunner Ventures',
     description: 'Backing the cutting edge.',
-    image: [
-      {
-        url: 'https://edgerunner.io/thumbnail.png',
-        width: 1200,
-        height: 630,
-        alt: 'Edgerunner Ventures Logo',
-      }
-    ],
-    type: 'website',
+    image: 'https://edgerunner.io/thumbnail.png',
+  }
+  twitter: {
+    title: 'Edgerunner Ventures',
+    description: 'Backing the cutting edge.',
+    image: 'https://edgerunner.io/thumbnail.png',
   }
 }
 
