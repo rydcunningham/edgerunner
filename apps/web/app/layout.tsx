@@ -14,10 +14,29 @@ const rajdhani = Rajdhani({
 })
 
 export const metadata = {
-  title: 'edgerunner.io',
-  description: 'Coming soon',
+  title: 'Edgerunner Ventures',
+  description: 'Backing the cutting edge.',
   icons: {
     icon: '/favicon.svg',
+  },
+  openGraph: {
+    title: 'Edgerunner Ventures',
+    description: 'Backing the cutting edge.',
+    images: [
+      {
+        url: '/thumbnail.png',
+        width: 1200,
+        height: 630,
+        alt: 'Edgerunner Ventures Logo',
+      }
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Edgerunner Ventures',
+    description: 'Backing the cutting edge.',
+    images: ['/thumbnail.png'],
   },
 }
 
