@@ -22,7 +22,7 @@ export const metadata = {
   openGraph: {
     title: 'Edgerunner Ventures',
     description: 'Backing the cutting edge.',
-    images: [
+    image: [
       {
         url: '/thumbnail.png',
         width: 1200,
@@ -31,13 +31,7 @@ export const metadata = {
       }
     ],
     type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Edgerunner Ventures',
-    description: 'Backing the cutting edge.',
-    images: ['/thumbnail.png'],
-  },
+  }
 }
 
 export default function RootLayout({
