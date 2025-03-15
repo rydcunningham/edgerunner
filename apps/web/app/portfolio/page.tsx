@@ -39,15 +39,26 @@ export default function Portfolio() {
 
   const categories = {
     "AI": [
-      /*{
-        name: "STEALTH",
+      {
+        name: "CentralAxis",
         description: "Data center optimization.",
         round: "Pre-seed",
-        domain: "infra",
+        domain: "datacenters",
         year: "2025",
         links: [
+          { label: "Site", url: "https://centralaxis.com" }
         ]
-      },*/
+      },
+      {
+        name: "TensorStax",
+        description: "Autonomous data engineering.",
+        round: "Seed",
+        domain: "agentic platforms",
+        year: "2025",
+        links: [
+          { label: "Site", url: "https://tensorstax.com" }
+        ]
+      },
       {
         name: "Fastino",
         description: "1000x faster LLM inference.",
@@ -90,6 +101,22 @@ export default function Portfolio() {
       }
     ],
     "Deep Tech": [
+      {
+        name: "Paradigm Robotics",
+        description: "Robotic first responders.",
+        round: "Seed",
+        domain: "robotics",
+        year: "2025",
+        links: [{ label: "Site", url: "https://www.paradigmrobotics.tech/" }]
+      },
+      {
+        name: "Alterego",
+        description: "Silent speech for human <> AI interaction.",
+        round: "Pre-seed",
+        domain: "BCI",
+        year: "2025",
+        links: [{ label: "Site", url: "https://www.media.mit.edu/projects/alterego/overview/" }]
+      },
       {
         name: "HYPR",
         description: "Radically different robotaxis with RL and consumer hardware.",

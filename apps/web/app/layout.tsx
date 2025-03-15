@@ -23,7 +23,7 @@ export const metadata = {
     title: 'Edgerunner Ventures',
     description: 'Backing the cutting edge.',
     image: 'https://edgerunner.io/thumbnail.png',
-  }
+  },
   twitter: {
     title: 'Edgerunner Ventures',
     description: 'Backing the cutting edge.',
