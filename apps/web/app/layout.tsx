@@ -18,16 +18,6 @@ export const metadata = {
   description: 'Backing the cutting edge.',
   icons: {
     icon: '/favicon.svg',
-  },
-  openGraph: {
-    title: 'Edgerunner Ventures',
-    description: 'Backing the cutting edge.',
-    image: 'https://edgerunner.io/thumbnail.png',
-  },
-  twitter: {
-    title: 'Edgerunner Ventures',
-    description: 'Backing the cutting edge.',
-    image: 'https://edgerunner.io/thumbnail.png',
   }
 }
 
@@ -38,6 +28,25 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={rajdhani.className}>
+      <head>
+        <title>Edgerunner Ventures</title>
+        <meta name="description" content="Backing the cutting edge." />
+        <link rel="icon" href="/favicon.svg" />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://edgerunner.io/" />
+        <meta property="og:title" content="Edgerunner Ventures" />
+        <meta property="og:description" content="Backing the cutting edge." />
+        <meta property="og:image" content="https://edgerunner.io/thumbnail.png" />
+
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content="https://edgerunner.io/" />
+        <meta property="twitter:title" content="Edgerunner Ventures" />
+        <meta property="twitter:description" content="Backing the cutting edge." />
+        <meta property="twitter:image" content="https://edgerunner.io/thumbnail.png" />
+      </head>
       <body className="min-h-screen relative bg-black">
         {/* Loading Screen */}
         <div className="loading-screen fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black">
