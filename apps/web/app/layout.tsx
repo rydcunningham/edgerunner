@@ -107,7 +107,15 @@ export default function RootLayout({
         <Navigation />
         <ReadingProgress />
 
-        {children}
+        <main className="relative">
+          {/* Fixed header space */}
+          <div className="h-[220px]" />
+          
+          {/* Scrollable content area */}
+          <div className="fixed inset-0 top-[220px] overflow-y-auto overflow-x-hidden">
+            {children}
+          </div>
+        </main>
         <Suspense>
           <SocialTray />
         </Suspense>

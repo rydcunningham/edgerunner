@@ -203,7 +203,7 @@ export default function Research() {
       </div>*/}
 
       {/* Scrollable Content */}
-      <div className="mt-72 px-24">
+      <div className="px-24">
         {sortedYears.map((year) => {
           const yearProjects = groupedProjects[year] || [];
           return (

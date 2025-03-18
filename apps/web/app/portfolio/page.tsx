@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts'
+import { SlidersHorizontal } from 'lucide-react'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 
 type Affiliation = {
   universities?: string[]
@@ -332,29 +334,59 @@ export default function Portfolio() {
           <p className="text-white/80">
             early-stage investments in AI, infrastructure, and dev tools.{' '}
           </p>
-          <div className="flex gap-4">
-            <button
-              onClick={() => setViewMode('cards')}
-              className={`text-sm uppercase tracking-wider transition-colors ${
-                viewMode === 'cards' ? 'text-[#F75049]' : 'text-white/60 hover:text-[#F75049]'
-              }`}
-            >
-              [Cards]
-            </button>
-            <button
-              onClick={() => setViewMode('table')}
-              className={`text-sm uppercase tracking-wider transition-colors ${
-                viewMode === 'table' ? 'text-[#F75049]' : 'text-white/60 hover:text-[#F75049]'
-              }`}
-            >
-              [Table]
-            </button>
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-4">
+              <button
+                onClick={() => setViewMode('cards')}
+                className={`text-sm uppercase tracking-wider transition-colors ${
+                  viewMode === 'cards' ? 'text-[#F75049]' : 'text-white/60 hover:text-[#F75049]'
+                }`}
+              >
+                [Cards]
+              </button>
+              <button
+                onClick={() => setViewMode('table')}
+                className={`text-sm uppercase tracking-wider transition-colors ${
+                  viewMode === 'table' ? 'text-[#F75049]' : 'text-white/60 hover:text-[#F75049]'
+                }`}
+              >
+                [Table]
+              </button>
+            </div>
+
+            {/* Mobile Filter Controls - Only show in cards view */}
+            {viewMode === 'cards' && (
+              <div className="md:hidden flex items-center gap-3">
+                <div className="text-white/60 text-sm uppercase tracking-wider">Filter:</div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setSelectedCategory('All')}
+                    className={`text-sm uppercase tracking-wider transition-colors ${
+                      selectedCategory === 'All' ? 'text-[#F75049]' : 'text-white/60 hover:text-[#F75049]'
+                    }`}
+                  >
+                    All
+                  </button>
+                  {Object.keys(categories).map(category => (
+                    <button
+                      key={category}
+                      onClick={() => setSelectedCategory(category)}
+                      className={`text-sm uppercase tracking-wider transition-colors ${
+                        selectedCategory === category ? 'text-[#F75049]' : 'text-white/60 hover:text-[#F75049]'
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Scrollable Content */}
-      <div className="mt-64 px-24">
+      <div className="px-24">
         {viewMode === 'table' ? (
           <div className="space-y-16">
             {Object.entries(categories).map(([category, investments]) => (
@@ -392,32 +424,35 @@ export default function Portfolio() {
           </div>
         ) : (
           <div className="flex">
-            {/* Sidebar Menu - Now Fixed */}
-            <div className="w-56 mr-12 fixed">
+            {/* Sidebar Menu - Hidden on Mobile */}
+            <div className="hidden md:block w-56 mr-12 fixed">
               <div className="space-y-6">
-                <div className="text-white/80 text-sm uppercase tracking-wider mb-2">Filter</div>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => setSelectedCategory('All')}
-                    className={`text-sm uppercase tracking-wider transition-colors block ${
-                      selectedCategory === 'All' ? 'text-[#F75049]' : 'text-white/60 hover:text-[#F75049]'
-                    }`}
-                  >
-                    All
-                  </button>
-                  {Object.keys(categories).map(category => (
+                {/* Desktop Filter Controls */}
+                <div>
+                  <div className="text-white/80 text-sm uppercase tracking-wider mb-2">Filter</div>
+                  <div className="space-y-3">
                     <button
-                      key={category}
-                      onClick={() => setSelectedCategory(category)}
+                      onClick={() => setSelectedCategory('All')}
                       className={`text-sm uppercase tracking-wider transition-colors block ${
-                        selectedCategory === category ? 'text-[#F75049]' : 'text-white/60 hover:text-[#F75049]'
+                        selectedCategory === 'All' ? 'text-[#F75049]' : 'text-white/60 hover:text-[#F75049]'
                       }`}
                     >
-                      {category}
+                      All
                     </button>
-                  ))}
+                    {Object.keys(categories).map(category => (
+                      <button
+                        key={category}
+                        onClick={() => setSelectedCategory(category)}
+                        className={`text-sm uppercase tracking-wider transition-colors block ${
+                          selectedCategory === category ? 'text-[#F75049]' : 'text-white/60 hover:text-[#F75049]'
+                        }`}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                
+
                 <div className="border-t border-white/10 pt-6">
                   <div className="text-white/80 text-sm uppercase tracking-wider mb-2">Stats</div>
                   <div className="text-white/60 text-sm">
@@ -563,13 +598,13 @@ export default function Portfolio() {
               </div>
             </div>
             
-            {/* Cards Container - With left margin to account for fixed sidebar */}
-            <div className="flex-1 relative ml-72">
+            {/* Cards Container */}
+            <div className="flex-1 relative md:ml-72">
               {/* Fixed viewport for cards */}
-              <div className="fixed left-[33%] right-24 overflow-hidden">
+              <div className="fixed left-24 md:left-[calc(24px+224px+96px)] right-24 overflow-hidden md:top-[220px] top-[280px]">
                 <div 
                   ref={cardsContainerRef}
-                  className="flex overflow-x-auto pb-8 items-start pl-4 pr-4 scrollbar-hide"
+                  className="flex overflow-x-auto pb-8 items-start pl-4 pr-4 scrollbar-hide touch-pan-x"
                   style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 >
                   {filteredInvestments.map((investment, index) => (

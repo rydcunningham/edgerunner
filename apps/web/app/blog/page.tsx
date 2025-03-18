@@ -77,7 +77,7 @@ export default function Blog() {
       </div>
 
       {/* Scrollable Posts */}
-      <div className="mt-72 px-24 space-y-12">
+      <div className="px-24 space-y-12">
         {posts.map((post) => (
           <article key={post.slug} className="group">
             <Link href={`/blog/${post.slug}`} className="block space-y-3">

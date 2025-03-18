@@ -2,11 +2,11 @@ import React from 'react'
 
 export default function Page() {
   return (
-    <div className="min-h-screen relative">
+    <div className="h-[calc(100vh-420px)] flex items-center">
       <div className="w-full max-w-[1000px]">
-        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
+        <div className="grid grid-cols-1 lg:grid-cols-2">
           {/* Main content */}
-          <div className="flex flex-col items-start justify-center px-12 pl-24 lg:pl-24 lg:pr-0 pt-24 lg:pt-0">
+          <div className="flex flex-col items-start px-12 pl-24 lg:pl-24 lg:pr-0">
             <div className="space-y-4">
               <div className="flex flex-col items-left lg:items-start">
                 <img

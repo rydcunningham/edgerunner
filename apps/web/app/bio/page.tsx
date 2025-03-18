@@ -27,7 +27,7 @@ export default function Bio() {
       </div>
 
       {/* Main Content */}
-      <div className="mt-56 px-24 grid grid-cols-[1fr,auto] gap-16">
+      <div className="px-24 grid grid-cols-[1fr,auto] gap-16">
         {/* Text Content */}
         <div className="space-y-6 max-w-3xl">
           <p className="text-white/80 leading-relaxed">
