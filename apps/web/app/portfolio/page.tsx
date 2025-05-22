@@ -330,7 +330,7 @@ export default function Portfolio() {
         <h2 className="text-white/90 text-2xl font-medium mb-4">Portfolio</h2>
         <div className="space-y-4">
           <p className="text-white/80">
-            early-stage investments in AI, infrastructure, and dev tools.{' '}
+            hyper-efficient technologies across the watt-to-bit value chain.{' '}
           </p>
           <div className="flex flex-col gap-4">
             <div className="flex gap-4">

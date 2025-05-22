@@ -14,14 +14,6 @@ export default function Bio() {
           </a>{' '}
         </p>
         <div className="flex gap-4">
-          <a
-            href="/cv.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm uppercase tracking-wider text-white/60 hover:text-[#F75049] transition-colors"
-          >
-            [CV]
-          </a>
         </div>
         </div>
       </div>
@@ -31,10 +23,9 @@ export default function Bio() {
         {/* Text Content */}
         <div className="space-y-6 max-w-3xl">
           <p className="text-white/80 leading-relaxed">
-            Ryan is a founder and investor focused on infrastructure and autonomous systems.
+            Ryan is a founder and investor focused on AI infrastructure, energy systems, and cutting edge products across the watt-to-bit value chain.
             He leads <a href="https://edgerunner.io" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">Edgerunner Ventures</a>,
-            investing in early-stage AI, robotics, and deep tech startups, and
-            serves as a Venture Partner at <a href="https://shack15.ventures" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">SHACK15 Ventures</a>.
+            and serves as a Venture Partner at <a href="https://www.augurvc.com/" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">Augur Energy AI Fund</a>.
           </p>
           <p className="text-white/80 leading-relaxed">
             Previously at <a href="https://aifund.ai" target="_blank" rel="noopener noreferrer" className="text-[#F75049]/90 hover:text-[#F75049] transition-colors">AI Fund</a> with Andrew Ng,
