@@ -35,7 +35,7 @@ export default function Portfolio() {
   const categories = {
     "AI": [
       {
-        name: "CentralAxis",
+        name: "Aravolta",
         description: "Data center optimization.",
         content: "Leveraging advanced models and digital twins for datacenter hardware asset monitoring, energy optimization, layout planning, and more. Founded by ex-Microsoft team and part of the Y Combinator S25 cohort.",
         round: "Pre-seed",
@@ -43,7 +43,7 @@ export default function Portfolio() {
         year: "2025",
         logoPath: "/portfolio/grayscale/centralaxis.png",
         links: [
-          { label: "Site", url: "https://centralaxis.com" }
+          { label: "Site", url: "https://aravolta.com" }
         ],
         affiliations: [
           { universities: ["Georgia Tech"],
@@ -142,6 +142,31 @@ export default function Portfolio() {
           { universities: ["University of Texas at Austin"]
           }
         ]
+      },
+      {
+        name: "360 Energy",
+        description: "Building the energy-compute asset class.",
+        content: "Backed by Halliburton, off-grid gas offtake monetized via in-field computing.",
+        round: "Seed",
+        domain: "energy",
+        year: "2025",
+        logoPath: "/portfolio/grayscale/paradigm_robotics.png",
+        links: [{ label: "Site", url: "https://www.360energyco.com/" }],
+        affiliations: [
+          { universities: ["Southern Methodist University"],
+            companies: ["Halliburton"]
+          }
+        ]
+      },
+      {
+        name: "SpringCycle Energy",
+        description: "Ultra-long-duration energy storage.",
+        content: "New battery chemistry for long-duration energy storage.",
+        round: "Pre-seed",
+        domain: "energy",
+        year: "2025",
+        logoPath: "/portfolio/grayscale/paradigm_robotics.png",
+        links: [{ label: "Site", url: "https://springcycleenergy.com/" }]
       },
       {
         name: "Alterego",
