@@ -97,7 +97,8 @@ export default function Portfolio() {
         logoPath: "/portfolio/grayscale/positron.png",
         links: [
           { label: "Site", url: "https://positron.ai" },
-          { label: "Deep Dive", url: "https://cerebralvalley.ai/blog/positron-is-pushing-the-boundaries-of-ai-hardware-2THN3t9OrS6n50HC3YyWPu" }
+          { label: "Deep Dive", url: "https://cerebralvalley.ai/blog/positron-is-pushing-the-boundaries-of-ai-hardware-2THN3t9OrS6n50HC3YyWPu" },
+          { label: "Series A Announcement", url: "https://www.businesswire.com/news/home/20250728912387/en/Positron-AI-Secures-%2451.6-Million-in-Oversubscribed-Series-A-to-Accelerate-Inference-Optimized-Hardware" }
         ],
         affiliations: [
           {
