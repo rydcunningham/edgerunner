@@ -1,0 +1,11 @@
+{
+  "name": "@edgerunner/tokens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The --k-* design-token contract. kiroshi.css carries the cyan instrument values verbatim (single source of truth: edgeos/kiroshi/v2/tokens.css); edgerunner.css is the black/red front-of-house colorway on the same variable names.",
+  "exports": {
+    "./kiroshi.css": "./kiroshi.css",
+    "./edgerunner.css": "./edgerunner.css",
+    "./preset": "./preset.cjs"
+  }
+}

@@ -1,0 +1,22 @@
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+.env*
+!.env.example
+
+# Local agent/editor config — references apps that aren't in this repo.
+.claude/
+
+# ---- Instruments: local-only for now ----
+# Only edgerunner.io (apps/site) is published from this repo. Cortex and
+# Overclock are desktop instruments that stay on the local workspace until
+# they get their own deploy: Cortex additionally can't build here at all,
+# since lib/graph.ts imports data/graph.json (22 MB, generated from the
+# local corpus and never committed). Remove these three lines when they're
+# ready to ship.
+apps/cortex/
+apps/overclock/
+packages/sim/

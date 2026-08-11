@@ -1,0 +1,66 @@
+/* ============================================================
+   EDGERUNNER colorway — front-of-house atmosphere for edgerunner.io.
+   Same --k-* contract as kiroshi.css (which must be imported first for
+   the component grammar + derived washes); this file only re-grounds
+   the atmosphere: pure black, brand red #F75049, neutral grey lines.
+   Toggle: html[data-colorway="edgerunner"].
+   Semantic data hues (--k-good/warn/bad/up/down) stay fixed — they are
+   defined in :root by kiroshi.css and are NOT overridden here.
+   ============================================================ */
+html[data-colorway="edgerunner"] {
+  --k-bg: #000000;
+  --k-bg-panel: rgba(18, 18, 18, .62);
+  --k-bg-raise: rgba(255, 255, 255, .07);
+  --k-bg-sel: rgba(255, 255, 255, .12);
+  --k-line: #262626;
+  --k-line-strong: #3d3d3d;
+  /* Corner ticks are quiet chrome by default (site is front-of-house
+     prose/cards, not a dense data instrument) and only flare to --k-tick-hot
+     on .k-panel:hover / a:focus-visible .k-panel — see app/globals.css. */
+  --k-tick: rgba(255, 255, 255, .14);
+  --k-tick-hot: rgba(255, 255, 255, .55);
+  --k-text: #f2f2f2;
+  --k-dim: #8a8a8a;
+  --k-faint: #5c5c5c;
+  --k-chart-label: #f2f2f2;
+  --k-accent: #F75049;
+  --k-grid-dot: rgba(255, 255, 255, .8);
+  --k-grid-line: rgba(255, 255, 255, .14);
+  --k-vig: 0, 0, 0;
+  --k-scan: rgba(255, 255, 255, .024);
+  --k-sunken: #0a0a0a;
+  --k-edge: #3d3d3d;
+}
+
+/* ---- LIGHT THEME for the edgerunner colorway ----
+   kiroshi.css's generic html[data-theme="light"] block hardcodes a cyan
+   accent (#0e8fb0) — correct for Cortex/Overclock, wrong here, since it
+   would turn the brand red teal the moment light mode is toggled. A
+   two-attribute selector outranks kiroshi's one-attribute light block
+   regardless of CSS file load order, so this reliably wins whenever both
+   attributes are present. Neutrals are kiroshi's own light values (proven,
+   AA-checked); only the accent and tick brightness are re-branded. */
+html[data-theme="light"][data-colorway="edgerunner"] {
+  --k-bg: #eef2f7;
+  --k-bg-panel: rgba(255, 255, 255, .66);
+  --k-bg-raise: rgba(22, 44, 66, .05);
+  --k-bg-sel: rgba(167, 44, 37, .08);
+  --k-line: #c9d5e1;
+  --k-line-strong: #93a6b8;
+  --k-tick: rgba(27, 39, 50, .14);
+  --k-tick-hot: rgba(27, 39, 50, .5);
+  --k-text: #1b2732;
+  --k-dim: #55677a;
+  --k-faint: #8194a6;
+  --k-chart-label: #33465b;
+  /* F75049 darkened ~35% toward black for AA contrast on a light ground —
+     same move kiroshi made darkening cyan #57c8e0 -> #0e8fb0 for its own
+     light theme. */
+  --k-accent: #a5342e;
+  --k-grid-dot: rgba(70, 100, 125, .55);
+  --k-grid-line: rgba(150, 170, 190, .5);
+  --k-vig: 205, 214, 224;
+  --k-scan: rgba(20, 50, 75, .03);
+  --k-sunken: #dde5ee;
+  --k-edge: #6f8296;
+}

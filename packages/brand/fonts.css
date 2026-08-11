@@ -1,0 +1,33 @@
+/* Brand faces, vendored from edgeos/cortex/app/fonts. Plain @font-face so
+   the literal family names in the token stacks ("Rajdhani", "Source Sans 3",
+   "JetBrains Mono") resolve without any framework font loader. */
+@font-face {
+  font-family: "Rajdhani";
+  src: url("./fonts/Rajdhani-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Rajdhani";
+  src: url("./fonts/Rajdhani-600.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Rajdhani";
+  src: url("./fonts/Rajdhani-700.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Source Sans 3";
+  src: url("./fonts/SourceSans3-var.woff2") format("woff2");
+  font-weight: 200 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("./fonts/JetBrainsMono-var.woff2") format("woff2");
+  font-weight: 100 800;
+  font-display: swap;
+}
