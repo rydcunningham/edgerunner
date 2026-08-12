@@ -1,0 +1,13 @@
+{
+  "name": "@edgerunner/kiroshi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Kiroshi v2 design system — the --k-* token contract, shared reset, and entity-view renderer. Synced verbatim from github.com/rydcunningham/kiroshi (v2/tokens.css, shared/reset.css, shared/entity-views.js); this workspace package is the consumer surface for apps/web, cortex, and overclock.",
+  "type": "module",
+  "exports": {
+    "./tokens.css": "./tokens.css",
+    "./shared/reset.css": "./shared/reset.css",
+    "./shared/entity-views": "./shared/entity-views.mjs",
+    "./package.json": "./package.json"
+  }
+}
